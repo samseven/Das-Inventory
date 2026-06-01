@@ -14,9 +14,8 @@
 <body>
     <nav class="navbar">
         <div class="logo">
-            <!-- <i class="fa-solid fa-school"></i> -->
-             <img src="Logo.png" width="50px" height="50px"/>
-            <span>مدارس دار السلام الأهلية</span>
+            <i class="fa-solid fa-school"></i>
+            <span>نظام الجرد الذكي</span>
         </div>
         <ul class="nav-links">
             <li><a href="#" class="active" data-target="home">الرئيسية</a></li>
@@ -430,8 +429,8 @@
         <!-- Reports Section -->
         <section id="reports" class="page-section hidden">
             <div class="section-header">
-                <h2><i class="fa-solid fa-file-lines" style="color: var(--primary); margin-left:0.5rem;"></i>التقارير والطباعة</h2>
-                <p>أنشئ تقارير مخصصة واطبعها أو صدّرها بصيغة Excel.</p>
+                <h2><i class="fa-solid fa-file-lines" style="color: var(--primary); margin-left:0.5rem;"></i>التقارير</h2>
+                <!-- <p>أنشئ تقارير مخصصة واطبعها أو صدّرها بصيغة Excel.</p> -->
             </div>
 
             <!-- Report Controls -->
@@ -445,6 +444,7 @@
                             <option value="summary">ملخص إجمالي الأصول</option>
                             <option value="maintenance">الأصول تحتاج صيانة / تالفة</option>
                             <option value="distribution">جدول توزيع الأصول</option>
+                            <option value="room">تقرير جرد غرفة تفصيلي</option>
                         </select>
                     </div>
                     <!-- Branch -->
@@ -466,6 +466,13 @@
                             <option value="ثانوي">ثانوي</option>
                             <option value="دبلوما أمريكية">دبلوما أمريكية</option>
                             <option value="الإدارة العامة">الإدارة العامة</option>
+                        </select>
+                    </div>
+                    <!-- Room Selection (Dynamic) -->
+                    <div class="form-group hidden" id="reportRoomGroup">
+                        <label><i class="fa-solid fa-door-open" style="color:var(--primary);"></i> رقم / اسم الغرفة</label>
+                        <select id="reportRoomNo">
+                            <option value="">اختر الغرفة...</option>
                         </select>
                     </div>
                     <!-- Asset Type -->

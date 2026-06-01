@@ -765,6 +765,8 @@ distBrand.addEventListener('change', renderMatrixTable);
 const reportType     = document.getElementById('reportType');
 const reportBranch   = document.getElementById('reportBranch');
 const reportSchool   = document.getElementById('reportSchool');
+const reportRoomNo   = document.getElementById('reportRoomNo');
+const reportRoomGroup= document.getElementById('reportRoomGroup');
 const reportAssetType= document.getElementById('reportAssetType');
 const reportStatus   = document.getElementById('reportStatus');
 const printReportBtn = document.getElementById('printReportBtn');
@@ -787,7 +789,51 @@ function updateReportFilters() {
         reportAssetType.appendChild(opt);
     });
     if (assetTypes.includes(prev)) reportAssetType.value = prev;
+
+    updateReportRoomDropdown();
 }
+
+function updateReportRoomDropdown() {
+    if (globalData.length === 0) return;
+    const branch = reportBranch.value;
+    const school = reportSchool.value;
+    const currentSelection = reportRoomNo.value;
+    
+    const relevantData = globalData.filter(row => {
+        if(row.id === "ID" || row.id === "id" || !row.id) return false;
+        const matchesBranch = branch === "" || row.branch === branch;
+        const matchesSchool = school === "" || row.school === school;
+        return matchesBranch && matchesSchool;
+    });
+
+    const rooms = [...new Set(relevantData.map(row => row.roomNo).filter(r => r))].sort();
+
+    reportRoomNo.innerHTML = '<option value="">اختر الغرفة...</option>';
+    rooms.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room;
+        option.textContent = room;
+        reportRoomNo.appendChild(option);
+    });
+
+    if (rooms.includes(currentSelection)) {
+        reportRoomNo.value = currentSelection;
+    } else {
+        reportRoomNo.value = "";
+    }
+}
+
+// Event Listeners for report filters toggles
+reportType.addEventListener('change', () => {
+    if (reportType.value === 'room') {
+        reportRoomGroup.classList.remove('hidden');
+    } else {
+        reportRoomGroup.classList.add('hidden');
+    }
+});
+
+reportBranch.addEventListener('change', updateReportRoomDropdown);
+reportSchool.addEventListener('change', updateReportRoomDropdown);
 
 // Helper: build report document header HTML
 function buildReportHeader(reportTitle, filtersSummary) {
@@ -818,12 +864,62 @@ function buildReportHeader(reportTitle, filtersSummary) {
     `;
 }
 
+// Helper: build room report document header HTML
+function buildRoomReportHeader(branchName, schoolName, roomNo, roomType, floor) {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+    return `
+        <div class="report-doc-header" style="border-bottom: 3px solid var(--primary); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+            <div class="report-doc-header-right" style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="report-doc-logo" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: white;">
+                    <i class="fa-solid fa-school"></i>
+                </div>
+                <div class="report-doc-title-block">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 0;">تقرير جرد محتويات غرفة</h2>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.9rem; color: var(--text-muted); font-weight: 600;">نظام جرد أصول المدرسة</p>
+                </div>
+            </div>
+            <div class="report-doc-header-left" style="text-align: left; font-size: 0.85rem; color: var(--text-muted); line-height: 1.8;">
+                <div>📅 التاريخ: ${dateStr}</div>
+                <div>🕒 الوقت: ${timeStr}</div>
+            </div>
+        </div>
+        
+        <div class="room-details-header" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; direction: rtl;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; color: var(--text-main);">
+                <i class="fa-solid fa-school" style="color: var(--primary); width: 20px;"></i>
+                <strong>المرحلة:</strong> <span>${schoolName}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; color: var(--text-main);">
+                <i class="fa-solid fa-code-branch" style="color: var(--primary); width: 20px;"></i>
+                <strong>الفرع:</strong> <span>${branchName}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; color: var(--text-main);">
+                <i class="fa-solid fa-door-open" style="color: var(--primary); width: 20px;"></i>
+                <strong>رقم الغرفة:</strong> <span style="font-weight: 700; color: var(--primary);">${roomNo}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; color: var(--text-main);">
+                <i class="fa-solid fa-circle-info" style="color: var(--primary); width: 20px;"></i>
+                <strong>نوع المكان:</strong> <span>${roomType}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; color: var(--text-main);">
+                <i class="fa-solid fa-layer-group" style="color: var(--primary); width: 20px;"></i>
+                <strong>الدور:</strong> <span>${floor}</span>
+            </div>
+        </div>
+    `;
+}
+
 // Helper: get filtered report data based on current filter selections
 function getReportData() {
     const branch = reportBranch.value;
     const school = reportSchool.value;
     const assetT = reportAssetType.value;
     const status = reportStatus.value;
+    const roomNo = reportRoomNo.value;
+    const type   = reportType.value;
 
     return globalData.filter(row => {
         if (row.id === 'ID' || row.id === 'id' || !row.id) return false;
@@ -831,7 +927,8 @@ function getReportData() {
         const mSchool  = school  === '' || row.school    === school;
         const mAsset   = assetT  === '' || row.assetType === assetT;
         const mStatus  = status  === '' || row.status    === status;
-        return mBranch && mSchool && mAsset && mStatus;
+        const mRoom    = type !== 'room' || roomNo === '' || (row.roomNo && String(row.roomNo) === String(roomNo));
+        return mBranch && mSchool && mAsset && mStatus && mRoom;
     });
 }
 
@@ -859,12 +956,17 @@ window.renderReport = function() {
     const school = reportSchool.value;
     const assetT = reportAssetType.value;
     const status = reportStatus.value;
+    const roomNo = reportRoomNo.value;
 
-    const filtersSummaryHtml =
+    let filtersSummaryHtml =
         filterTag('code-branch', 'الفرع', branch) +
         filterTag('school', 'المرحلة', school) +
         filterTag('box', 'نوع الأصل', assetT) +
         filterTag('shield-halved', 'الحالة', status);
+
+    if (type === 'room') {
+        filtersSummaryHtml += filterTag('door-open', 'الغرفة', roomNo);
+    }
 
     let reportData = getReportData();
     let html = '';
@@ -1147,6 +1249,79 @@ window.renderReport = function() {
             </div>
         `;
     }
+    
+    // ---- REPORT TYPE: ROOM INVENTORY ----
+    else if (type === 'room') {
+        if (!roomNo) {
+            showToast('يرجى اختيار الغرفة أولاً لمعاينة تقرير الغرفة المحددة', 'error');
+            return;
+        }
+
+        const branchName = reportData[0]?.branch || branch || 'الكل';
+        const schoolName = reportData[0]?.school || school || 'الكل';
+        const roomTypeName = reportData[0]?.roomType || 'غير محدد';
+        const floorName = reportData[0]?.floor || 'غير محدد';
+
+        const header = buildRoomReportHeader(branchName, schoolName, roomNo, roomTypeName, floorName);
+
+        const rows = reportData.map((row, index) => `
+            <tr>
+                <td style="text-align:center;">${index + 1}</td>
+                <td><strong>${row.assetType || '-'}</strong></td>
+                <td>${row.brand || '-'}</td>
+                <td>${row.model || '-'}</td>
+                <td style="font-family:monospace; font-size:0.85rem;">${row.serial || '-'}</td>
+                <td>${statusBadge(row.status)}</td>
+                <td style="text-align:center; font-weight:800;">${row.quantity || '1'}</td>
+            </tr>
+        `).join('');
+
+        const totalQty = reportData.reduce((acc, r) => acc + (parseInt(r.quantity) || 1), 0);
+        const totalRow = `
+            <tr>
+                <td colspan="6" style="text-align:left; font-weight:800;">الإجمالي الكلي للأصول في الغرفة</td>
+                <td style="text-align:center; font-weight:900; font-size:1.1rem; color:var(--primary);">${totalQty}</td>
+            </tr>
+        `;
+
+        const tableHtml = `
+            <h3 style="font-size:1.1rem; color:var(--primary); margin-bottom:1rem; border-right:4px solid var(--primary); padding-right:0.75rem;">
+                <i class="fa-solid fa-list-check"></i> الأصول المتواجدة في الغرفة (${reportData.length} سجل)
+            </h3>
+            <div style="overflow-x:auto;">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align:center;">م</th>
+                            <th>نوع الأصل</th>
+                            <th>الماركة</th>
+                            <th>الموديل</th>
+                            <th>السيريال</th>
+                            <th>الحالة</th>
+                            <th style="width: 80px; text-align:center;">الكمية</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows || '<tr><td colspan="7" style="text-align:center;">لا توجد أصول مسجلة في هذه الغرفة</td></tr>'}</tbody>
+                    <tfoot>${totalRow}</tfoot>
+                </table>
+            </div>
+        `;
+
+        const signaturesHtml = `
+            <div class="report-signatures-section" style="margin-top: 3.5rem; display: flex; justify-content: space-between; gap: 3rem; direction: rtl;">
+                <div class="signature-box" style="flex: 1; border: 1px dashed var(--border-color); border-radius: 12px; padding: 1.25rem; text-align: center; background-color: #fafafa;">
+                    <h4 style="margin-bottom: 2rem; color: var(--text-main); font-weight: 700;">مسؤول العهدة</h4>
+                    <p style="border-top: 1px solid var(--text-muted); width: 80%; margin: 1rem auto 0 auto; padding-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">التوقيع: ............................</p>
+                </div>
+                <div class="signature-box" style="flex: 1; border: 1px dashed var(--border-color); border-radius: 12px; padding: 1.25rem; text-align: center; background-color: #fafafa;">
+                    <h4 style="margin-bottom: 2rem; color: var(--text-main); font-weight: 700;">قائد المدرسة / مدير الفرع</h4>
+                    <p style="border-top: 1px solid var(--text-muted); width: 80%; margin: 1rem auto 0 auto; padding-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">التوقيع: ............................</p>
+                </div>
+            </div>
+        `;
+
+        html = header + tableHtml + signaturesHtml;
+    }
 
     // Footer
     html += `
@@ -1162,7 +1337,7 @@ window.renderReport = function() {
     reportEmptyState.classList.add('hidden');
 
     // Update toolbar info
-    const typeLabels = { full: 'كشف الجرد الكامل', summary: 'ملخص إجمالي الأصول', maintenance: 'الأصول المتضررة', distribution: 'جدول التوزيع' };
+    const typeLabels = { full: 'كشف الجرد الكامل', summary: 'ملخص إجمالي الأصول', maintenance: 'الأصول المتضررة', distribution: 'جدول التوزيع', room: 'تقرير جرد الغرفة' };
     reportPreviewInfo.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#a5f3fc;"></i> تم إنشاء التقرير: <strong>${typeLabels[type] || ''}</strong>`;
 
     // Enable buttons
@@ -1199,7 +1374,14 @@ window.exportCSV = function() {
     let csvRows = [];
     let filename = 'تقرير_الأصول';
 
-    if (type === 'maintenance') {
+    if (type === 'room') {
+        if (!reportRoomNo.value) {
+            showToast('يرجى اختيار الغرفة أولاً لتصدير تقرير الغرفة المحددة', 'error');
+            return;
+        }
+        reportData = getReportData();
+        filename = `تقرير_جرد_الغرفة_${reportRoomNo.value}`;
+    } else if (type === 'maintenance') {
         reportData = globalData.filter(row => {
             if (row.id === 'ID' || row.id === 'id' || !row.id) return false;
             const mBranch = branch === '' || row.branch === branch;
@@ -1213,7 +1395,21 @@ window.exportCSV = function() {
         reportData = getReportData();
     }
 
-    if (type === 'summary') {
+    if (type === 'room') {
+        // Room inventory export format
+        csvRows.push(['م', 'نوع الأصل', 'الماركة', 'الموديل', 'الرقم التسلسلي', 'الحالة', 'الكمية']);
+        reportData.forEach((row, idx) => {
+            csvRows.push([
+                idx + 1,
+                row.assetType || '',
+                row.brand || '',
+                row.model || '',
+                row.serial || '',
+                row.status || '',
+                row.quantity || '1'
+            ]);
+        });
+    } else if (type === 'summary') {
         // Summary report: export type totals
         filename = 'ملخص_الأصول';
         const typeStats = {};
