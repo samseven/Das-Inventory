@@ -502,8 +502,35 @@ tr:hover td {
 }
 
 @media (max-width: 768px) {
-    .navbar { padding: 1rem 5%; }
-    .nav-links { display: none; }
+    .navbar { 
+        padding: 1rem 5%; 
+        position: relative;
+    }
+    .nav-links { 
+        display: none; 
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: var(--card-bg);
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
+        padding: 1.5rem 5%;
+        box-shadow: var(--shadow-lg);
+        gap: 0.75rem;
+        z-index: 100;
+    }
+    .nav-links.active {
+        display: flex;
+    }
+    .nav-links a {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+    }
     .mobile-menu-btn { display: block; }
     
     .hero {
