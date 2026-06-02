@@ -4,29 +4,31 @@ const API_URL = "https://script.google.com/macros/s/AKfycbwzKqOQrYP80lFviKtQtGWs
 
 // --- Data Definitions ---
 const assetBrands = {
-    "كمبيوتر": ["dell", "hp", "premum", "compaq", "laptop", "taplet"],
+    "كمبيوتر": ["Dell", "Hp", "Premum", "Compaq", "laptop", "Taplet"],
     "بروجيكتور": ["sharp", "infocus", "sony"],
-    "طابعة ألوان": ["hp pro300", "hp1525n"],
-    "طابعة أبيض وأسود": ["p2035", "p1105", "p1006"],
+    "طابعة ألوان": ["hp pro300", "hp1525n",],
+    "طابعة أبيض وأسود": ["p2035", "p1005", "p1006","P1102","P2025"],
     "آلة تصوير": ["كانون", "كيوسيرا"],
+    " شاشة كمبيوتر": ["]Dell", "hp","Samsung"],
+" شاشة تلبفزيوبنة": ["Dansat", "Mando","Samsung"," Wansa"],
     "سبورة": ["تفاعلية", "عادية", "متحركة", "بيضاء منسدلة"],
     "لوحة وبرية": ["قياسية"],
-    "مكيف": ["LG", "Media", "Hair"],
+    "مكيف": ["LG", "Media", "Hair","Smart"," Gaint"," Crown"," Top-Tech","Plasma","Hammer","Dankin","TIT","Bancool","StarWay"],
     "طاولة طالب": ["خشب", "حديد", "بلاستيك"],
     "مقعد طالب": ["خشب", "حديد"],
     "مكتب معلم": ["خشب كبير", "خشب صغير"],
     "كرسي معلم": ["دوار", "ثابت"],
-    "سماعة تفاعلية": ["qomo", "edis", "supper"],
-    "ماسح ضوئي": ["hp", "canon", "epson"],
+    "سماعة ": ["Qomo", "Edis", "Supper","matrix"," متحركة"],
+    "ماسح ضوئي": ["Hp", "Canon", "Epson"],
     "دولاب": ["خشبي", "حديد"],
     "خزنة حديد": ["صغيرة", "كبيرة"],
     "خزانة كتب": ["خشبية", "معدنية"],
     "طاولة اجتماعات": ["بيضاوي", "مستطيل"],
     "طاولة دائرية": ["صغيرة", "كبيرة"],
     "كاميرا مراقبة": ["Hikvision", "Dahua"],
-    "كبينة نت": ["قياسية"]
+    "كبينة نت": ["قياسية"],
+    "إذاعة مدرسية": ["اذاعة"]
 };
-
 // --- DOM Elements ---
 const navLinks = document.querySelectorAll('.nav-links a');
 const pageSections = document.querySelectorAll('.page-section');
