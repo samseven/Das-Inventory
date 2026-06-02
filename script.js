@@ -33,14 +33,14 @@ const assetBrands = {
     "دروع مدرسية": ["درع"],
      "برواز حائط": ["برواز"],
     "ثلاجة": ["ثلاجة"],
-    "برادة مياه ": ["برادة"],
+    "برادة مياه": ["برادة"],
     "جهاز بصمة": ["بصمة"],
     "سلة مهملات": ["سلة"],
         "ستائر": ["ستائر"],
     "كاميرا": ["Hikvision","Dahua","E-Gaurde","View"],
     "DVR": ["HikVision","E-Gaurde"],
     "NVR": ["Hikvesion","E-Gaurde"],
-    "Switch ": ["8 Port","16 Port","24 Port","48 Port"],
+    "Switch": ["8 Port","16 Port","24 Port","48 Port"],
     "Access Point": ["Linksysy","TP-Link","D-Link","Aruba"]
 
 };
