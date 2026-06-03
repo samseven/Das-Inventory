@@ -816,7 +816,10 @@ const reportBranch   = document.getElementById('reportBranch');
 const reportSchool   = document.getElementById('reportSchool');
 const reportRoomNo   = document.getElementById('reportRoomNo');
 const reportRoomGroup= document.getElementById('reportRoomGroup');
+const reportFloor    = document.getElementById('reportFloor');
+const reportFloorGroup= document.getElementById('reportFloorGroup');
 const reportAssetType= document.getElementById('reportAssetType');
+const reportBrand    = document.getElementById('reportBrand');
 const reportStatus   = document.getElementById('reportStatus');
 const printReportBtn = document.getElementById('printReportBtn');
 const exportCsvBtn   = document.getElementById('exportCsvBtn');
@@ -840,6 +843,7 @@ function updateReportFilters() {
     if (assetTypes.includes(prev)) reportAssetType.value = prev;
 
     updateReportRoomDropdown();
+    updateReportBrandDropdown();
 }
 
 function updateReportRoomDropdown() {
@@ -872,17 +876,47 @@ function updateReportRoomDropdown() {
     }
 }
 
+function updateReportBrandDropdown() {
+    if (globalData.length === 0) return;
+    const selectedAssetType = reportAssetType.value;
+    const prevBrand = reportBrand.value;
+
+    const filteredForBrands = globalData.filter(row => {
+        if(row.id === "ID" || row.id === "id") return false;
+        return selectedAssetType === "" || row.assetType === selectedAssetType;
+    });
+
+    const brands = [...new Set(filteredForBrands.map(row => row.brand).filter(b => b))].sort();
+
+    reportBrand.innerHTML = '<option value="">الكل (جميع الماركات)</option>';
+    brands.forEach(brand => {
+        const option = document.createElement('option');
+        option.value = brand;
+        option.textContent = brand;
+        reportBrand.appendChild(option);
+    });
+
+    if (brands.includes(prevBrand)) {
+        reportBrand.value = prevBrand;
+    } else {
+        reportBrand.value = "";
+    }
+}
+
 // Event Listeners for report filters toggles
 reportType.addEventListener('change', () => {
     if (reportType.value === 'room') {
         reportRoomGroup.classList.remove('hidden');
+        reportFloorGroup.classList.add('hidden');
     } else {
         reportRoomGroup.classList.add('hidden');
+        reportFloorGroup.classList.remove('hidden');
     }
 });
 
 reportBranch.addEventListener('change', updateReportRoomDropdown);
 reportSchool.addEventListener('change', updateReportRoomDropdown);
+reportAssetType.addEventListener('change', updateReportBrandDropdown);
 
 // Helper: build report document header HTML
 function buildReportHeader(reportTitle, filtersSummary) {
@@ -966,8 +1000,10 @@ function getReportData() {
     const branch = reportBranch.value;
     const school = reportSchool.value;
     const assetT = reportAssetType.value;
+    const brand  = reportBrand.value;
     const status = reportStatus.value;
     const roomNo = reportRoomNo.value;
+    const floor  = reportFloor.value;
     const type   = reportType.value;
 
     return globalData.filter(row => {
@@ -977,7 +1013,9 @@ function getReportData() {
         const mAsset   = assetT  === '' || row.assetType === assetT;
         const mStatus  = status  === '' || row.status    === status;
         const mRoom    = type !== 'room' || roomNo === '' || (row.roomNo && String(row.roomNo) === String(roomNo));
-        return mBranch && mSchool && mAsset && mStatus && mRoom;
+        const mFloor   = type === 'room' || floor === '' || row.floor === floor;
+        const mBrand   = brand  === '' || (row.brand && String(row.brand).toLowerCase() === brand.toLowerCase());
+        return mBranch && mSchool && mAsset && mStatus && mRoom && mFloor && mBrand;
     });
 }
 
@@ -1004,17 +1042,22 @@ window.renderReport = function() {
     const branch = reportBranch.value;
     const school = reportSchool.value;
     const assetT = reportAssetType.value;
+    const brand  = reportBrand.value;
     const status = reportStatus.value;
     const roomNo = reportRoomNo.value;
+    const floor  = reportFloor.value;
 
     let filtersSummaryHtml =
         filterTag('code-branch', 'الفرع', branch) +
         filterTag('school', 'المرحلة', school) +
         filterTag('box', 'نوع الأصل', assetT) +
+        filterTag('tag', 'الماركة', brand) +
         filterTag('shield-halved', 'الحالة', status);
 
     if (type === 'room') {
         filtersSummaryHtml += filterTag('door-open', 'الغرفة', roomNo);
+    } else {
+        filtersSummaryHtml += filterTag('layer-group', 'الدور', floor);
     }
 
     let reportData = getReportData();
@@ -1372,6 +1415,102 @@ window.renderReport = function() {
         html = header + tableHtml + signaturesHtml;
     }
 
+    // ---- REPORT TYPE: CUSTOM ASSET REPORT ----
+    else if (type === 'asset_report') {
+        if (!assetT) {
+            showToast('يرجى اختيار نوع الأصل أولاً لمعاينة تقرير الأصل المخصص', 'error');
+            return;
+        }
+
+        const brandText = brand ? ` (${brand})` : ' (جميع الماركات)';
+        const reportTitle = `تقرير جرد أصل: ${assetT}${brandText}`;
+        const header = buildReportHeader(reportTitle, filtersSummaryHtml);
+
+        const totalItems = reportData.length;
+        const totalQty   = reportData.reduce((acc, r) => acc + (parseInt(r.quantity) || 1), 0);
+        const uniqueRooms= new Set(reportData.map(r => r.roomNo)).size;
+
+        const summaryCards = `
+            <div class="report-summary-cards">
+                <div class="report-summary-card">
+                    <div class="count">${totalQty}</div>
+                    <div class="label">إجمالي الكمية</div>
+                </div>
+                <div class="report-summary-card">
+                    <div class="count">${totalItems}</div>
+                    <div class="label">عدد السجلات</div>
+                </div>
+                <div class="report-summary-card">
+                    <div class="count">${uniqueRooms}</div>
+                    <div class="label">غرف / مواقع متواجد فيها</div>
+                </div>
+            </div>
+        `;
+
+        const rows = reportData.map((row, index) => `
+            <tr>
+                <td style="text-align:center;">${index + 1}</td>
+                <td>${row.branch || '-'}</td>
+                <td>${row.school || '-'}</td>
+                <td>${row.floor || '-'}</td>
+                <td><strong>${row.roomNo || '-'}</strong></td>
+                <td>${row.brand || '-'}</td>
+                <td>${row.model || '-'}</td>
+                <td style="font-family:monospace; font-size:0.85rem;">${row.serial || '-'}</td>
+                <td>${statusBadge(row.status)}</td>
+                <td style="text-align:center; font-weight:800;">${row.quantity || '1'}</td>
+            </tr>
+        `).join('');
+
+        const totalRow = `
+            <tr>
+                <td colspan="9" style="text-align:left; font-weight:800;">الإجمالي الكلي للكمية</td>
+                <td style="text-align:center; font-weight:900; font-size:1.1rem; color:var(--primary);">${totalQty}</td>
+            </tr>
+        `;
+
+        const tableHtml = `
+            <h3 style="font-size:1.1rem; color:var(--primary); margin-bottom:1rem; border-right:4px solid var(--primary); padding-right:0.75rem;">
+                <i class="fa-solid fa-list-check"></i> تفاصيل تواجد الأصل (${totalItems} سجل)
+            </h3>
+            <div style="overflow-x:auto;">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align:center;">م</th>
+                            <th>الفرع</th>
+                            <th>المرحلة</th>
+                            <th>الدور</th>
+                            <th>الغرفة</th>
+                            <th>الماركة</th>
+                            <th>الموديل</th>
+                            <th>السيريال</th>
+                            <th>الحالة</th>
+                            <th style="width: 80px; text-align:center;">الكمية</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows || '<tr><td colspan="10" style="text-align:center;">لا توجد أصول مسجلة تطابق هذه التصفية</td></tr>'}</tbody>
+                    <tfoot>${totalRow}</tfoot>
+                </table>
+            </div>
+        `;
+
+        const signaturesHtml = `
+            <div class="report-signatures-section" style="margin-top: 3.5rem; display: flex; justify-content: space-between; gap: 3rem; direction: rtl;">
+                <div class="signature-box" style="flex: 1; border: 1px dashed var(--border-color); border-radius: 12px; padding: 1.25rem; text-align: center; background-color: #fafafa;">
+                    <h4 style="margin-bottom: 2rem; color: var(--text-main); font-weight: 700;">مسؤول العهدة</h4>
+                    <p style="border-top: 1px solid var(--text-muted); width: 80%; margin: 1rem auto 0 auto; padding-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">التوقيع: ............................</p>
+                </div>
+                <div class="signature-box" style="flex: 1; border: 1px dashed var(--border-color); border-radius: 12px; padding: 1.25rem; text-align: center; background-color: #fafafa;">
+                    <h4 style="margin-bottom: 2rem; color: var(--text-main); font-weight: 700;">قائد المدرسة / مدير الفرع</h4>
+                    <p style="border-top: 1px solid var(--text-muted); width: 80%; margin: 1rem auto 0 auto; padding-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);">التوقيع: ............................</p>
+                </div>
+            </div>
+        `;
+
+        html = header + summaryCards + tableHtml + signaturesHtml;
+    }
+
     // Footer
     html += `
         <div class="report-doc-footer">
@@ -1386,7 +1525,7 @@ window.renderReport = function() {
     reportEmptyState.classList.add('hidden');
 
     // Update toolbar info
-    const typeLabels = { full: 'كشف الجرد الكامل', summary: 'ملخص إجمالي الأصول', maintenance: 'الأصول المتضررة', distribution: 'جدول التوزيع', room: 'تقرير جرد الغرفة' };
+    const typeLabels = { full: 'كشف الجرد الكامل', summary: 'ملخص إجمالي الأصول', maintenance: 'الأصول المتضررة', distribution: 'جدول التوزيع', room: 'تقرير جرد الغرفة', asset_report: 'تقرير جرد أصل مخصص' };
     reportPreviewInfo.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#a5f3fc;"></i> تم إنشاء التقرير: <strong>${typeLabels[type] || ''}</strong>`;
 
     // Enable buttons
@@ -1417,7 +1556,9 @@ window.exportCSV = function() {
     const branch  = reportBranch.value;
     const school  = reportSchool.value;
     const assetT  = reportAssetType.value;
+    const brand   = reportBrand.value;
     const status  = reportStatus.value;
+    const floor   = reportFloor.value;
 
     let reportData;
     let csvRows = [];
@@ -1430,6 +1571,14 @@ window.exportCSV = function() {
         }
         reportData = getReportData();
         filename = `تقرير_جرد_الغرفة_${reportRoomNo.value}`;
+    } else if (type === 'asset_report') {
+        if (!assetT) {
+            showToast('يرجى اختيار نوع الأصل أولاً لتصدير تقرير الأصل المخصص', 'error');
+            return;
+        }
+        reportData = getReportData();
+        const brandText = brand ? `_${brand}` : '';
+        filename = `تقرير_جرد_أصل_${assetT}${brandText}`;
     } else if (type === 'maintenance') {
         reportData = globalData.filter(row => {
             if (row.id === 'ID' || row.id === 'id' || !row.id) return false;
@@ -1458,13 +1607,30 @@ window.exportCSV = function() {
                 row.quantity || '1'
             ]);
         });
+    } else if (type === 'asset_report') {
+        // Asset report export format
+        csvRows.push(['م', 'الفرع', 'المرحلة/المدرسة', 'الدور', 'الغرفة', 'الماركة', 'الموديل', 'الرقم التسلسلي', 'الحالة', 'الكمية']);
+        reportData.forEach((row, idx) => {
+            csvRows.push([
+                idx + 1,
+                row.branch || '',
+                row.school || '',
+                row.floor || '',
+                row.roomNo || '',
+                row.brand || '',
+                row.model || '',
+                row.serial || '',
+                row.status || '',
+                row.quantity || '1'
+            ]);
+        });
     } else if (type === 'summary') {
         // Summary report: export type totals
         filename = 'ملخص_الأصول';
         const typeStats = {};
         reportData.forEach(row => {
             const qty = parseInt(row.quantity) || 1;
-            const t = row.assetType || 'غير محدد';
+            const t = row.assetType || 'غير مححد';
             typeStats[t] = (typeStats[t] || 0) + qty;
         });
         csvRows.push(['نوع الأصل', 'الإجمالي']);
@@ -1541,4 +1707,220 @@ window.navigateTo = function(targetId) {
         fetchData().then(() => updateReportFilters());
     }
 };
+
+// ============================================================
+// CUSTOM SEARCHABLE SELECT COMPONENT FUNCTIONALITY
+// ============================================================
+
+function makeSearchableSelect(select) {
+    if (!select || select.tagName !== 'SELECT') return;
+    if (select.dataset.searchableInitialized) return;
+    select.dataset.searchableInitialized = 'true';
+
+    // Create wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select-wrapper';
+    
+    // Insert wrapper before the select and move the select inside
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.appendChild(select);
+    
+    // Hide the original select (still accessible and fires change events)
+    select.style.display = 'none';
+
+    // Create trigger button
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger';
+    trigger.innerHTML = `<span></span><i class="fa-solid fa-chevron-down"></i>`;
+    wrapper.appendChild(trigger);
+
+    // Create dropdown container
+    const dropdown = document.createElement('div');
+    dropdown.className = 'custom-select-dropdown hidden';
+    
+    // Create search input
+    const searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.className = 'custom-select-search';
+    searchInput.placeholder = 'ابحث هنا...';
+    dropdown.appendChild(searchInput);
+
+    // Create options container
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'custom-select-options';
+    dropdown.appendChild(optionsContainer);
+    
+    wrapper.appendChild(dropdown);
+
+    // Update trigger text based on current selection
+    function updateTriggerText() {
+        const selectedOption = select.options[select.selectedIndex];
+        trigger.querySelector('span').textContent = selectedOption ? selectedOption.textContent : 'اختر...';
+    }
+
+    // Rebuild options in custom dropdown
+    function rebuildOptions() {
+        optionsContainer.innerHTML = '';
+        const options = Array.from(select.options);
+        
+        // Hide search if options are 4 or less to keep UI clean
+        if (options.length <= 4) {
+            searchInput.classList.add('hidden');
+        } else {
+            searchInput.classList.remove('hidden');
+        }
+
+        options.forEach((opt, idx) => {
+            const isSelected = opt.selected;
+            const customOpt = document.createElement('div');
+            customOpt.className = `custom-select-option${isSelected ? ' selected' : ''}`;
+            customOpt.textContent = opt.textContent;
+            customOpt.dataset.value = opt.value;
+            customOpt.dataset.index = idx;
+            
+            customOpt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                select.selectedIndex = idx;
+                
+                // Trigger change events
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                
+                // Close dropdown
+                closeDropdown();
+            });
+            optionsContainer.appendChild(customOpt);
+        });
+        
+        updateTriggerText();
+    }
+
+    // Filter options based on search text
+    function filterOptions() {
+        const filterText = searchInput.value.toLowerCase().trim();
+        const customOpts = optionsContainer.querySelectorAll('.custom-select-option');
+        
+        customOpts.forEach(customOpt => {
+            const txt = customOpt.textContent.toLowerCase();
+            if (txt.includes(filterText)) {
+                customOpt.style.display = 'block';
+            } else {
+                customOpt.style.display = 'none';
+            }
+        });
+    }
+
+    function openDropdown() {
+        // Close other open custom selects first
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w !== wrapper) {
+                w.classList.remove('open');
+                w.querySelector('.custom-select-dropdown').classList.add('hidden');
+            }
+        });
+
+        wrapper.classList.add('open');
+        dropdown.classList.remove('hidden');
+        searchInput.value = '';
+        filterOptions();
+        setTimeout(() => searchInput.focus(), 50);
+    }
+
+    function closeDropdown() {
+        wrapper.classList.remove('open');
+        dropdown.classList.add('hidden');
+    }
+
+    function toggleDropdown(e) {
+        e.stopPropagation();
+        if (wrapper.classList.contains('open')) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    }
+
+    trigger.addEventListener('click', toggleDropdown);
+    searchInput.addEventListener('input', filterOptions);
+
+    // Sync visibility based on the hidden class on native select
+    function syncVisibility() {
+        if (select.classList.contains('hidden')) {
+            wrapper.classList.add('hidden');
+        } else {
+            wrapper.classList.remove('hidden');
+        }
+    }
+
+    // Initial build and visibility check
+    rebuildOptions();
+    syncVisibility();
+
+    // Listen to changes on the original select to update trigger text
+    select.addEventListener('change', () => {
+        updateTriggerText();
+        // Update selected class in custom options
+        const customOpts = optionsContainer.querySelectorAll('.custom-select-option');
+        customOpts.forEach((customOpt, idx) => {
+            if (idx === select.selectedIndex) {
+                customOpt.classList.add('selected');
+            } else {
+                customOpt.classList.remove('selected');
+            }
+        });
+    });
+
+    // Handle form reset event to sync back
+    const parentForm = select.closest('form');
+    if (parentForm) {
+        parentForm.addEventListener('reset', () => {
+            setTimeout(() => {
+                rebuildOptions();
+                syncVisibility();
+            }, 50);
+        });
+    }
+
+    // MutationObserver to watch for dynamic changes (like options changes or class changes)
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+            if (mutation.type === 'childList') {
+                rebuildOptions();
+            } else if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                syncVisibility();
+            }
+        });
+    });
+    
+    observer.observe(select, { 
+        childList: true, 
+        subtree: true, 
+        characterData: true,
+        attributes: true,
+        attributeFilter: ['class']
+    });
+}
+
+// Wire up all select fields to use the custom searchable select dropdown
+function initAllSearchableSelects() {
+    const allSelects = document.querySelectorAll('select');
+    allSelects.forEach(select => {
+        makeSearchableSelect(select);
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAllSearchableSelects);
+} else {
+    initAllSearchableSelects();
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => {
+            wrapper.classList.remove('open');
+            wrapper.querySelector('.custom-select-dropdown').classList.add('hidden');
+        });
+    }
+});
 

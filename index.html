@@ -477,6 +477,7 @@
                             <option value="maintenance">الأصول تحتاج صيانة / تالفة</option>
                             <option value="distribution">جدول توزيع الأصول</option>
                             <option value="room">تقرير جرد غرفة تفصيلي</option>
+                            <option value="asset_report">تقرير جرد أصل مخصص</option>
                         </select>
                     </div>
                     <!-- Branch -->
@@ -507,11 +508,28 @@
                             <option value="">اختر الغرفة...</option>
                         </select>
                     </div>
+                    <!-- Floor Selection -->
+                    <div class="form-group" id="reportFloorGroup">
+                        <label><i class="fa-solid fa-layer-group" style="color:var(--primary);"></i> الدور</label>
+                        <select id="reportFloor">
+                            <option value="">الكل (جميع الأدوار)</option>
+                            <option value="الدور الأرضي">الدور الأرضي</option>
+                            <option value="الدور الأول">الدور الأول</option>
+                            <option value="القبو">القبو</option>
+                        </select>
+                    </div>
                     <!-- Asset Type -->
                     <div class="form-group">
                         <label><i class="fa-solid fa-box" style="color:var(--primary);"></i> نوع الأصل</label>
                         <select id="reportAssetType">
                             <option value="">الكل (جميع الأصول)</option>
+                        </select>
+                    </div>
+                    <!-- Brand -->
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-tag" style="color:var(--primary);"></i> ماركة الأصل</label>
+                        <select id="reportBrand">
+                            <option value="">الكل (جميع الماركات)</option>
                         </select>
                     </div>
                     <!-- Status -->
