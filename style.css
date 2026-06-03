@@ -1001,6 +1001,294 @@ tr:hover td {
 }
 
 /* ========================================
+   DASHBOARD & ANALYTICS CHARTS STYLES
+   ======================================== */
+.analytics-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.dashboard-full-width {
+    grid-column: 1 / -1;
+}
+
+.kpi-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.kpi-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+}
+
+.kpi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.kpi-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.kpi-card.total .kpi-icon-wrapper {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(99, 102, 241, 0.15));
+    color: var(--primary);
+}
+
+.kpi-card.excellent .kpi-icon-wrapper {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.15));
+    color: #10b981;
+}
+
+.kpi-card.maintenance .kpi-icon-wrapper {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.15));
+    color: #f59e0b;
+}
+
+.kpi-card.broken .kpi-icon-wrapper {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.15));
+    color: #ef4444;
+}
+
+.kpi-info h3 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+}
+
+.kpi-info p {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 0;
+    line-height: 1;
+}
+
+/* Charts & Lists */
+.chart-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.chart-card h3 {
+    font-size: 1.1rem;
+    color: var(--primary);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+}
+
+.chart-bars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.chart-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.chart-bar-label {
+    width: 110px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-align: right;
+}
+
+.chart-bar-outer {
+    flex: 1;
+    height: 14px;
+    background-color: #f1f5f9;
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+}
+
+.chart-bar-inner {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-bar-inner.excellent { background-color: #10b981; }
+.chart-bar-inner.good { background-color: #3b82f6; }
+.chart-bar-inner.maintenance { background-color: #f59e0b; }
+.chart-bar-inner.broken { background-color: #ef4444; }
+.chart-bar-inner.default-bar { background-color: var(--primary); }
+
+.chart-bar-value {
+    width: 65px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-align: left;
+    direction: ltr;
+}
+
+/* Stacked bar for brand analysis */
+.brand-analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    width: 100%;
+}
+
+.brand-analysis-card {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: var(--transition);
+}
+
+.brand-analysis-card:hover {
+    background-color: #ffffff;
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+
+.brand-analysis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.brand-analysis-header h4 {
+    font-size: 1.05rem;
+    color: var(--text-dark);
+    margin: 0;
+    font-weight: 700;
+}
+
+.brand-analysis-header span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    background-color: rgba(79, 70, 229, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 99px;
+}
+
+.stacked-bar-container {
+    height: 16px;
+    width: 100%;
+    background-color: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+    display: flex;
+}
+
+.stacked-bar-segment {
+    height: 100%;
+    transition: width 0.6s ease;
+}
+
+.stacked-bar-segment.excellent { background-color: #10b981; }
+.stacked-bar-segment.good { background-color: #3b82f6; }
+.stacked-bar-segment.maintenance { background-color: #f59e0b; }
+.stacked-bar-segment.broken { background-color: #ef4444; }
+
+.brand-legend-mini {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.brand-legend-mini-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.legend-dot-mini {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-dot-mini.excellent { background-color: #10b981; }
+.legend-dot-mini.good { background-color: #3b82f6; }
+.legend-dot-mini.maintenance { background-color: #f59e0b; }
+.legend-dot-mini.broken { background-color: #ef4444; }
+
+/* General Legend */
+.dashboard-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    background-color: #f8fafc;
+    padding: 0.75rem 1.5rem;
+    border-radius: 99px;
+    border: 1px solid var(--border-color);
+    margin: 1rem auto 0 auto;
+    max-width: fit-content;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-dot.excellent { background-color: #10b981; }
+.legend-dot.good { background-color: #3b82f6; }
+.legend-dot.maintenance { background-color: #f59e0b; }
+.legend-dot.broken { background-color: #ef4444; }
+
+/* ========================================
    PRINT MEDIA QUERY
    ======================================== */
 @media print {
