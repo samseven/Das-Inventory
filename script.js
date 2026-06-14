@@ -1,8 +1,9 @@
 // --- Configuration ---
 // يرجى استبدال الرابط أدناه بالرابط الخاص بـ Web App بعد نشر Google Apps Script
-const API_URL = "https://script.google.com/macros/s/AKfycbwzKqOQrYP80lFviKtQtGWseYvnfqje-b4q22xgp5DQ5ox9v29vh4_OsBXJnmSqQNmH_Q/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbwzEfVEbmz-R90oFfZ0mXme47nOvwYGgyB8RL6slL0ok47G_wRCQlC9cLxoqT8TBwHJoA/exec"; 
 
 // --- Data Definitions ---
+
 const assetBrands = {
     "كمبيوتر": ["Dell", "Hp", "Premum", "Compaq", "laptop", "Taplet"],
     "بروجيكتور": ["Sharp", "Infocus", "Sony"],
@@ -111,7 +112,6 @@ if (mobileMenuBtn && navLinksContainer) {
         }
     });
 
-    // Close menu when clicking a link
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
             navLinksContainer.classList.remove('active');
@@ -124,7 +124,6 @@ if (mobileMenuBtn && navLinksContainer) {
 }
 
 window.navigateTo = function(targetId) {
-    // Update active nav link
     navLinks.forEach(link => {
         if (link.getAttribute('data-target') === targetId) {
             link.classList.add('active');
@@ -133,14 +132,12 @@ window.navigateTo = function(targetId) {
         }
     });
 
-    // Update active section
     pageSections.forEach(section => {
         if (section.id === targetId) {
             section.classList.remove('hidden');
             section.classList.add('active');
-            // Re-trigger animation
             section.style.animation = 'none';
-            section.offsetHeight; // trigger reflow
+            section.offsetHeight;
             section.style.animation = null;
         } else {
             section.classList.add('hidden');
@@ -148,7 +145,6 @@ window.navigateTo = function(targetId) {
         }
     });
 
-    // Fetch data if navigating to dashboard, statistics or distribution
     if ((targetId === 'dashboard' || targetId === 'statistics' || targetId === 'distribution') && globalData.length === 0) {
         fetchData();
     } else if (globalData.length > 0) {
@@ -178,7 +174,6 @@ assetTypeSelect.addEventListener('change', (e) => {
         brandSelect.classList.remove('hidden');
         customBrandInput.classList.add('hidden');
         
-        // Add custom option
         const customOption = document.createElement('option');
         customOption.value = "أخرى";
         customOption.textContent = "أخرى (كتابة يدوية)";
@@ -212,19 +207,16 @@ assetForm.addEventListener('submit', async (e) => {
     const formData = new FormData(assetForm);
     const data = Object.fromEntries(formData.entries());
     
-    // Handle brand
     if (data.brand === "أخرى" || !data.brand) {
         data.brand = data.customBrand || "غير محدد";
     }
 
-    // Add timestamp and random ID
     data.date = new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit' });
     data.id = "AST-" + Math.floor(Math.random() * 1000000);
 
     setLoading(true);
 
     try {
-        // We use mode: 'no-cors' because Google Apps Script does not return proper CORS headers for POST
         await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -234,12 +226,10 @@ assetForm.addEventListener('submit', async (e) => {
             body: JSON.stringify(data)
         });
         
-        // Assuming success if fetch didn't throw
         showToast('تم حفظ الأصل بنجاح!', 'success');
         assetForm.reset();
         brandSelect.innerHTML = '<option value="">اختر أو اكتب...</option>';
         customBrandInput.classList.add('hidden');
-        // Clear global data so next visit to dashboard forces refresh
         globalData = []; 
     } catch (error) {
         console.error('Error saving:', error);
@@ -294,7 +284,7 @@ window.fetchData = async function() {
             updateRoomDropdown();
             updateStatFilters();
             updateDistFilters();
-            applyFilters(); // render with current filters
+            applyFilters();
             if (typeof renderStatistics === 'function') renderStatistics();
             if (typeof renderMatrixTable === 'function') renderMatrixTable();
         } else {
@@ -319,12 +309,11 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     
     if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="12" class="text-center empty-state"><h3>لم يتم العثور على نتائج مطابقة للبحث</h3></td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="13" class="text-center empty-state"><h3>لم يتم العثور على نتائج مطابقة للبحث</h3></td></tr>';
         return;
     }
 
     data.forEach(row => {
-        // Skip header row if it comes from sheet by mistake
         if(row.id === "ID" || row.id === "id" || !row.id) return; 
 
         const tr = document.createElement('tr');
@@ -341,8 +330,17 @@ function renderTable(data) {
             <td style="font-family: monospace; color: var(--text-muted);">${row.serial || '-'}</td>
             <td><span class="status-badge ${getStatusClass(row.status)}">${row.status || '-'}</span></td>
             <td style="font-size: 0.85rem; color: var(--text-muted);">${row.date || '-'}</td>
+            <td>
+                <div class="action-btns">
+                    <button class="action-btn action-btn-edit" title="تعديل" onclick="openEditModal('${row.id}')">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="action-btn action-btn-delete" title="حذف" onclick="openDeleteConfirm('${row.id}')">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </td>
         `;
-        // Excluded ID from table view to keep it clean, added strong to roomNo
         tableBody.appendChild(tr);
     });
 }
@@ -494,7 +492,6 @@ function renderStatistics() {
         return;
     }
 
-    // Calculations
     let totalAssets = 0;
     const typeStats = {};
     const brandStats = {};
@@ -528,7 +525,6 @@ function renderStatistics() {
 
     let html = '';
 
-    // 1. MAIN CARD (TOTAL)
     let mainTitle = "إجمالي الأصول";
     if (assetType !== "" && brand !== "") {
         mainTitle = `إجمالي: ${assetType} (${brand})`;
@@ -546,7 +542,6 @@ function renderStatistics() {
         </div>
     `;
 
-    // 2. BREAKDOWN RENDERING
     if (assetType !== "" && brand !== "") {
         html += renderSectionHTML("الحالة التشغيلية", statusStats, 'status', getStatusClassLocal);
         html += renderSectionHTML("أماكن التواجد", locationStats, 'location');
@@ -777,7 +772,7 @@ function renderMatrixTable() {
 
     html += `
             <td style="text-align: center; font-size: 1.1rem; font-weight: 900; background-color: var(--primary); color: white;">${grandTotal}</td>
-        </tr>
+        </td>
     `;
 
     html += `
@@ -828,7 +823,6 @@ const reportEmptyState    = document.getElementById('reportEmptyState');
 const printableReport     = document.getElementById('printableReport');
 const reportPreviewInfo   = document.getElementById('reportPreviewInfo');
 
-// Populate asset types in the report filter dynamically from globalData
 function updateReportFilters() {
     if (globalData.length === 0) return;
     const assetTypes = [...new Set(globalData.map(r => r.assetType).filter(t => t && t !== 'ID' && t !== 'id'))].sort();
@@ -903,7 +897,6 @@ function updateReportBrandDropdown() {
     }
 }
 
-// Event Listeners for report filters toggles
 reportType.addEventListener('change', () => {
     if (reportType.value === 'room') {
         reportRoomGroup.classList.remove('hidden');
@@ -918,7 +911,6 @@ reportBranch.addEventListener('change', updateReportRoomDropdown);
 reportSchool.addEventListener('change', updateReportRoomDropdown);
 reportAssetType.addEventListener('change', updateReportBrandDropdown);
 
-// Helper: build report document header HTML
 function buildReportHeader(reportTitle, filtersSummary) {
     const now = new Date();
     const dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -947,7 +939,6 @@ function buildReportHeader(reportTitle, filtersSummary) {
     `;
 }
 
-// Helper: build room report document header HTML
 function buildRoomReportHeader(branchName, schoolName, roomNo, roomType, floor) {
     const now = new Date();
     const dateStr = now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -995,7 +986,6 @@ function buildRoomReportHeader(branchName, schoolName, roomNo, roomType, floor) 
     `;
 }
 
-// Helper: get filtered report data based on current filter selections
 function getReportData() {
     const branch = reportBranch.value;
     const school = reportSchool.value;
@@ -1019,19 +1009,16 @@ function getReportData() {
     });
 }
 
-// Helper: build a filter tag badge
 function filterTag(icon, label, value) {
     const display = value === '' ? 'الكل' : value;
     return `<span class="report-filter-tag"><i class="fa-solid ${icon}"></i> ${label}: ${display}</span>`;
 }
 
-// Build status badge for the report table
 function statusBadge(status) {
     const cls = getStatusClass(status || '');
     return `<span class="status-badge ${cls}" style="font-size:0.8rem;">${status || '-'}</span>`;
 }
 
-// ---- RENDER REPORT ----
 window.renderReport = function() {
     if (globalData.length === 0) {
         showToast('يرجى تحميل البيانات أولاً من صفحة البحث والتحليل', 'error');
@@ -1063,13 +1050,10 @@ window.renderReport = function() {
     let reportData = getReportData();
     let html = '';
 
-    // ---- REPORT TYPE: FULL INVENTORY ----
     if (type === 'full') {
-        // Maintenance report auto-overrides status filter
         const reportTitle = 'كشف الجرد الكامل للأصول';
         const header = buildReportHeader(reportTitle, filtersSummaryHtml);
 
-        // Summary cards
         const totalItems = reportData.length;
         const totalQty   = reportData.reduce((acc, r) => acc + (parseInt(r.quantity) || 1), 0);
         const uniqueTypes= new Set(reportData.map(r => r.assetType)).size;
@@ -1135,14 +1119,13 @@ window.renderReport = function() {
                             <th>الحالة</th><th>التاريخ</th>
                         </tr>
                     </thead>
-                    <tbody>${rows || '<tr><td colspan="12" style="text-align:center;">لا توجد بيانات</td></tr>'}</tbody>
+                    <tbody>${rows || '<tr><td colspan="12" style="text-align:center;">لا توجد بيانات</td>'}</tbody>
                     <tfoot>${totalRow}</tfoot>
                 </table>
             </div>
         `;
     }
 
-    // ---- REPORT TYPE: SUMMARY ----
     else if (type === 'summary') {
         const reportTitle = 'ملخص إجمالي الأصول';
         const header = buildReportHeader(reportTitle, filtersSummaryHtml);
@@ -1172,16 +1155,16 @@ window.renderReport = function() {
 
         const buildSummaryTable = (title, stats, icon) => {
             const rows = Object.entries(stats).sort((a,b) => b[1]-a[1]).map(([k,v]) =>
-                `<tr><td>${k}</td><td style="text-align:center; font-weight:800;">${v}</td><td style="text-align:center;">${Math.round(v/grandTotal*100)}%</td></tr>`
+                `<tr><td style="text-align:right;">${k}</td><td style="text-align:center; font-weight:800;">${v}</td><td style="text-align:center;">${Math.round(v/grandTotal*100)}%</td></tr>`
             ).join('');
             return `
                 <h3 style="font-size:1rem; color:var(--primary); margin:1.5rem 0 0.75rem; border-right:4px solid var(--primary); padding-right:0.75rem;">
                     <i class="fa-solid ${icon}"></i> ${title}
                 </h3>
                 <table class="report-table" style="margin-bottom:1.5rem;">
-                    <thead><tr><th>البيان</th><th style="text-align:center;">العدد</th><th style="text-align:center;">النسبة</th></tr></thead>
-                    <tbody>${rows || '<tr><td colspan="3" style="text-align:center;">لا بيانات</td></tr>'}</tbody>
-                    <tfoot><tr><td><strong>الإجمالي</strong></td><td style="text-align:center; font-weight:900;">${grandTotal}</td><td style="text-align:center;">100%</td></tr></tfoot>
+                    <thead><tr><th style="text-align:right;">البيان</th><th style="text-align:center;">العدد</th><th style="text-align:center;">النسبة</th></tr></thead>
+                    <tbody>${rows || '<td><td colspan="3" style="text-align:center;">لا بيانات</td>'}</tbody>
+                    <tfoot><td><strong>الإجمالي</strong></td><td style="text-align:center; font-weight:900;">${grandTotal}</td><td style="text-align:center;">100%</td></tr></tfoot>
                 </table>
             `;
         };
@@ -1206,10 +1189,8 @@ window.renderReport = function() {
             buildSummaryTable('توزيع الأصول حسب الفرع والمرحلة', locationStats, 'location-dot');
     }
 
-    // ---- REPORT TYPE: MAINTENANCE ----
     else if (type === 'maintenance') {
         const reportTitle = 'تقرير الأصول التي تحتاج صيانة أو تالفة';
-        // Override filter for maintenance: always show both statuses
         let mData = globalData.filter(row => {
             if (row.id === 'ID' || row.id === 'id' || !row.id) return false;
             const mBranch = reportBranch.value === '' || row.branch === reportBranch.value;
@@ -1263,13 +1244,12 @@ window.renderReport = function() {
                             <th>نوع الأصل</th><th>الكمية</th><th>الماركة</th><th>السيريال</th><th>الحالة</th>
                         </tr>
                     </thead>
-                    <tbody>${rows || '<tr><td colspan="9" style="text-align:center; color:#10b981; font-weight:700;"><i class="fa-solid fa-check-circle"></i> لا توجد أصول تحتاج صيانة أو تالفة وفق هذه الفلاتر!</td></tr>'}</tbody>
+                    <tbody>${rows || '<tr><td colspan="9" style="text-align:center; color:#10b981; font-weight:700;"><i class="fa-solid fa-check-circle"></i> لا توجد أصول تحتاج صيانة أو تالفة وفق هذه الفلاتر!</td>'}</tbody>
                 </table>
             </div>
         `;
     }
 
-    // ---- REPORT TYPE: DISTRIBUTION MATRIX ----
     else if (type === 'distribution') {
         const reportTitle = 'جدول توزيع الأصول على الفروع والمراحل';
         const header = buildReportHeader(reportTitle, filtersSummaryHtml);
@@ -1310,31 +1290,31 @@ window.renderReport = function() {
                 const sum = locRows.filter(r => r.assetType === t).reduce((a, r) => a + (parseInt(r.quantity)||1), 0);
                 rowTotal += sum;
                 colTotals[t] += sum;
-                return `<td>${sum > 0 ? `<strong>${sum}</strong>` : '<span style="color:#cbd5e1;">0</span>'}</td>`;
+                return `<td style="text-align:center;">${sum > 0 ? `<strong>${sum}</strong>` : '<span style="color:#cbd5e1;">0</span>'}</td>`;
             }).join('');
             grandTotal += rowTotal;
             const bg = idx % 2 === 0 ? '#fff' : '#f8fafc';
-            return `<tr style="background-color:${bg};"><td style="font-weight:700;">${loc.label}</td>${cells}<td style="text-align:center; font-weight:900; color:var(--primary);">${rowTotal}</td></tr>`;
+            return `<tr style="background-color:${bg};"><td style="font-weight:700; text-align:right;">${loc.label}</td>${cells}<td style="text-align:center; font-weight:900; color:var(--primary);">${rowTotal}</td></tr>`;
         }).join('');
 
-        const footerCells = assetTypes.map(t => `<td>${colTotals[t]}</td>`).join('');
+        const footerCells = assetTypes.map(t => `<td style="text-align:center;">${colTotals[t]}</td>`).join('');
 
         html = header + `
             <div style="overflow-x:auto;">
                 <table class="report-matrix-table">
                     <thead>
                         <tr>
-                            <th>القسم / الفرع</th>
-                            ${assetTypes.map(t => `<th>${t}</th>`).join('')}
-                            <th>الإجمالي</th>
+                            <th style="text-align:right;">القسم / الفرع</th>
+                            ${assetTypes.map(t => `<th style="text-align:center;">${t}</th>`).join('')}
+                            <th style="text-align:center;">الإجمالي</th>
                         </tr>
                     </thead>
-                    <tbody>${matrixRows || '<tr><td colspan="99" style="text-align:center;">لا توجد بيانات</td></tr>'}</tbody>
+                    <tbody>${matrixRows || '<tr><td colspan="99" style="text-align:center;">لا توجد بيانات</td>'}</tbody>
                     <tfoot>
                         <tr>
-                            <td>الإجمالي الكلي</td>
+                            <td style="text-align:right; font-weight:800;">الإجمالي الكلي</td>
                             ${footerCells}
-                            <td>${grandTotal}</td>
+                            <td style="text-align:center; font-weight:900; background-color:var(--primary); color:white;">${grandTotal}</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -1342,7 +1322,6 @@ window.renderReport = function() {
         `;
     }
     
-    // ---- REPORT TYPE: ROOM INVENTORY ----
     else if (type === 'room') {
         if (!roomNo) {
             showToast('يرجى اختيار الغرفة أولاً لمعاينة تقرير الغرفة المحددة', 'error');
@@ -1359,13 +1338,13 @@ window.renderReport = function() {
         const rows = reportData.map((row, index) => `
             <tr>
                 <td style="text-align:center;">${index + 1}</td>
-                <td><strong>${row.assetType || '-'}</strong></td>
-                <td>${row.brand || '-'}</td>
-                <td>${row.model || '-'}</td>
+                <td style="text-align:right;"><strong>${row.assetType || '-'}</strong></td>
+                <td style="text-align:right;">${row.brand || '-'}</td>
+                <td style="text-align:right;">${row.model || '-'}</td>
                 <td style="font-family:monospace; font-size:0.85rem;">${row.serial || '-'}</td>
-                <td>${statusBadge(row.status)}</td>
+                <td style="text-align:center;">${statusBadge(row.status)}</td>
                 <td style="text-align:center; font-weight:800;">${row.quantity || '1'}</td>
-            </tr>
+             </tr>
         `).join('');
 
         const totalQty = reportData.reduce((acc, r) => acc + (parseInt(r.quantity) || 1), 0);
@@ -1385,15 +1364,15 @@ window.renderReport = function() {
                     <thead>
                         <tr>
                             <th style="width: 50px; text-align:center;">م</th>
-                            <th>نوع الأصل</th>
-                            <th>الماركة</th>
-                            <th>الموديل</th>
-                            <th>السيريال</th>
-                            <th>الحالة</th>
+                            <th style="text-align:right;">نوع الأصل</th>
+                            <th style="text-align:right;">الماركة</th>
+                            <th style="text-align:right;">الموديل</th>
+                            <th style="text-align:right;">السيريال</th>
+                            <th style="text-align:center;">الحالة</th>
                             <th style="width: 80px; text-align:center;">الكمية</th>
                         </tr>
                     </thead>
-                    <tbody>${rows || '<tr><td colspan="7" style="text-align:center;">لا توجد أصول مسجلة في هذه الغرفة</td></tr>'}</tbody>
+                    <tbody>${rows || '<tr><td colspan="7" style="text-align:center;">لا توجد أصول مسجلة في هذه الغرفة</td>'}</tbody>
                     <tfoot>${totalRow}</tfoot>
                 </table>
             </div>
@@ -1415,7 +1394,6 @@ window.renderReport = function() {
         html = header + tableHtml + signaturesHtml;
     }
 
-    // ---- REPORT TYPE: CUSTOM ASSET REPORT ----
     else if (type === 'asset_report') {
         if (!assetT) {
             showToast('يرجى اختيار نوع الأصل أولاً لمعاينة تقرير الأصل المخصص', 'error');
@@ -1450,16 +1428,16 @@ window.renderReport = function() {
         const rows = reportData.map((row, index) => `
             <tr>
                 <td style="text-align:center;">${index + 1}</td>
-                <td>${row.branch || '-'}</td>
-                <td>${row.school || '-'}</td>
-                <td>${row.floor || '-'}</td>
-                <td><strong>${row.roomNo || '-'}</strong></td>
-                <td>${row.brand || '-'}</td>
-                <td>${row.model || '-'}</td>
+                <td style="text-align:right;">${row.branch || '-'}</td>
+                <td style="text-align:right;">${row.school || '-'}</td>
+                <td style="text-align:right;">${row.floor || '-'}</td>
+                <td style="text-align:right;"><strong>${row.roomNo || '-'}</strong></td>
+                <td style="text-align:right;">${row.brand || '-'}</td>
+                <td style="text-align:right;">${row.model || '-'}</td>
                 <td style="font-family:monospace; font-size:0.85rem;">${row.serial || '-'}</td>
-                <td>${statusBadge(row.status)}</td>
+                <td style="text-align:center;">${statusBadge(row.status)}</td>
                 <td style="text-align:center; font-weight:800;">${row.quantity || '1'}</td>
-            </tr>
+             </tr>
         `).join('');
 
         const totalRow = `
@@ -1478,18 +1456,18 @@ window.renderReport = function() {
                     <thead>
                         <tr>
                             <th style="width: 50px; text-align:center;">م</th>
-                            <th>الفرع</th>
-                            <th>المرحلة</th>
-                            <th>الدور</th>
-                            <th>الغرفة</th>
-                            <th>الماركة</th>
-                            <th>الموديل</th>
-                            <th>السيريال</th>
-                            <th>الحالة</th>
+                            <th style="text-align:right;">الفرع</th>
+                            <th style="text-align:right;">المرحلة</th>
+                            <th style="text-align:right;">الدور</th>
+                            <th style="text-align:right;">الغرفة</th>
+                            <th style="text-align:right;">الماركة</th>
+                            <th style="text-align:right;">الموديل</th>
+                            <th style="text-align:right;">السيريال</th>
+                            <th style="text-align:center;">الحالة</th>
                             <th style="width: 80px; text-align:center;">الكمية</th>
                         </tr>
                     </thead>
-                    <tbody>${rows || '<tr><td colspan="10" style="text-align:center;">لا توجد أصول مسجلة تطابق هذه التصفية</td></tr>'}</tbody>
+                    <tbody>${rows || '<tr><td colspan="10" style="text-align:center;">لا توجد أصول مسجلة تطابق هذه التصفية</td>'}</tbody>
                     <tfoot>${totalRow}</tfoot>
                 </table>
             </div>
@@ -1511,7 +1489,6 @@ window.renderReport = function() {
         html = header + summaryCards + tableHtml + signaturesHtml;
     }
 
-    // Footer
     html += `
         <div class="report-doc-footer">
             <span>نظام جرد أصول المدرسة &copy; ${new Date().getFullYear()}</span>
@@ -1519,24 +1496,19 @@ window.renderReport = function() {
         </div>
     `;
 
-    // Inject into DOM
     printableReport.innerHTML = html;
     reportPreviewArea.classList.remove('hidden');
     reportEmptyState.classList.add('hidden');
 
-    // Update toolbar info
     const typeLabels = { full: 'كشف الجرد الكامل', summary: 'ملخص إجمالي الأصول', maintenance: 'الأصول المتضررة', distribution: 'جدول التوزيع', room: 'تقرير جرد الغرفة', asset_report: 'تقرير جرد أصل مخصص' };
     reportPreviewInfo.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#a5f3fc;"></i> تم إنشاء التقرير: <strong>${typeLabels[type] || ''}</strong>`;
 
-    // Enable buttons
     printReportBtn.disabled = false;
     exportCsvBtn.disabled = false;
 
-    // Scroll to preview
     reportPreviewArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-// ---- PRINT ----
 window.printReport = function() {
     if (!printableReport || printableReport.innerHTML.trim() === '') {
         showToast('يرجى معاينة التقرير أولاً', 'error');
@@ -1545,7 +1517,6 @@ window.printReport = function() {
     window.print();
 };
 
-// ---- EXPORT CSV ----
 window.exportCSV = function() {
     if (globalData.length === 0) {
         showToast('لا توجد بيانات للتصدير', 'error');
@@ -1594,7 +1565,6 @@ window.exportCSV = function() {
     }
 
     if (type === 'room') {
-        // Room inventory export format
         csvRows.push(['م', 'نوع الأصل', 'الماركة', 'الموديل', 'الرقم التسلسلي', 'الحالة', 'الكمية']);
         reportData.forEach((row, idx) => {
             csvRows.push([
@@ -1608,7 +1578,6 @@ window.exportCSV = function() {
             ]);
         });
     } else if (type === 'asset_report') {
-        // Asset report export format
         csvRows.push(['م', 'الفرع', 'المرحلة/المدرسة', 'الدور', 'الغرفة', 'الماركة', 'الموديل', 'الرقم التسلسلي', 'الحالة', 'الكمية']);
         reportData.forEach((row, idx) => {
             csvRows.push([
@@ -1625,18 +1594,16 @@ window.exportCSV = function() {
             ]);
         });
     } else if (type === 'summary') {
-        // Summary report: export type totals
         filename = 'ملخص_الأصول';
         const typeStats = {};
         reportData.forEach(row => {
             const qty = parseInt(row.quantity) || 1;
-            const t = row.assetType || 'غير مححد';
+            const t = row.assetType || 'غير محدد';
             typeStats[t] = (typeStats[t] || 0) + qty;
         });
         csvRows.push(['نوع الأصل', 'الإجمالي']);
         Object.entries(typeStats).sort((a,b)=>b[1]-a[1]).forEach(([k,v]) => csvRows.push([k, v]));
     } else if (type === 'distribution') {
-        // Distribution: export matrix
         filename = 'جدول_توزيع_الأصول';
         const assetTypes = [...new Set(reportData.map(r => r.assetType).filter(t => t && t !== 'ID'))].sort();
         const locations = [
@@ -1670,7 +1637,6 @@ window.exportCSV = function() {
         });
         csvRows.push(['الإجمالي الكلي', ...assetTypes.map(t => colTotals[t]), grandTotal]);
     } else {
-        // Full / Maintenance: export all rows
         csvRows.push(['الفرع', 'المرحلة', 'نوع المكان', 'الدور', 'الغرفة', 'نوع الأصل', 'الكمية', 'الماركة', 'الموديل', 'السيريال', 'الحالة', 'التاريخ']);
         reportData.forEach(row => {
             csvRows.push([
@@ -1681,7 +1647,6 @@ window.exportCSV = function() {
         });
     }
 
-    // Build CSV string (with UTF-8 BOM for Arabic Excel compatibility)
     const csvContent = '\uFEFF' + csvRows.map(row =>
         row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\n');
@@ -1697,7 +1662,6 @@ window.exportCSV = function() {
     showToast('تم تصدير الملف بنجاح! يمكن فتحه في Excel', 'success');
 };
 
-// --- Wire up: when navigating to reports, populate filters ---
 const _origNavigateTo = window.navigateTo;
 window.navigateTo = function(targetId) {
     _origNavigateTo(targetId);
@@ -1709,7 +1673,310 @@ window.navigateTo = function(targetId) {
 };
 
 // ============================================================
-// CUSTOM SEARCHABLE SELECT COMPONENT FUNCTIONALITY
+// EDIT ASSET FUNCTIONS - إضافة ميزة التعديل
+// ============================================================
+
+window.openEditModal = async function(assetId) {
+    if (!globalData || globalData.length === 0) {
+        showToast('البيانات لم يتم تحميلها بعد، يرجى تحديث البيانات أولاً', 'error');
+        return;
+    }
+    
+    const asset = globalData.find(item => String(item.id) === String(assetId));
+    
+    if (!asset) {
+        showToast('لم يتم العثور على الأصل المطلوب', 'error');
+        return;
+    }
+    
+    document.getElementById('editAssetId').value = asset.id;
+    document.getElementById('editAssetDate').value = asset.date || '';
+    
+    const editBranch = document.getElementById('editBranch');
+    if (editBranch) editBranch.value = asset.branch || 'بنين';
+    
+    const editSchool = document.getElementById('editSchool');
+    if (editSchool) editSchool.value = asset.school || 'ابتدائي';
+    
+    const editRoomType = document.getElementById('editRoomType');
+    if (editRoomType) editRoomType.value = asset.roomType || 'فصل';
+    
+    const editFloor = document.getElementById('editFloor');
+    if (editFloor) editFloor.value = asset.floor || 'الدور الأرضي';
+    
+    const editRoomNo = document.getElementById('editRoomNo');
+    if (editRoomNo) editRoomNo.value = asset.roomNo || '';
+    
+    const editAssetType = document.getElementById('editAssetType');
+    if (editAssetType) editAssetType.value = asset.assetType || '';
+    
+    const editQuantity = document.getElementById('editQuantity');
+    if (editQuantity) editQuantity.value = asset.quantity || '1';
+    
+    const editBrand = document.getElementById('editBrand');
+    if (editBrand) editBrand.value = asset.brand || '';
+    
+    const editModel = document.getElementById('editModel');
+    if (editModel) editModel.value = asset.model || '';
+    
+    const editSerial = document.getElementById('editSerial');
+    if (editSerial) editSerial.value = asset.serial || '';
+    
+    const editStatus = document.getElementById('editStatus');
+    if (editStatus) editStatus.value = asset.status || 'ممتاز';
+    
+    const modal = document.getElementById('editModal');
+    if (modal) modal.classList.remove('hidden');
+};
+
+window.closeEditModal = function() {
+    const modal = document.getElementById('editModal');
+    if (modal) modal.classList.add('hidden');
+    
+    document.getElementById('editAssetId').value = '';
+    document.getElementById('editAssetDate').value = '';
+};
+
+window.saveEdit = async function() {
+    const assetId = document.getElementById('editAssetId').value;
+    if (!assetId) {
+        showToast('خطأ: لم يتم العثور على معرف الأصل', 'error');
+        return;
+    }
+    
+    const updatedData = {
+        action: 'update',
+        id: assetId,
+        branch: document.getElementById('editBranch').value,
+        school: document.getElementById('editSchool').value,
+        roomType: document.getElementById('editRoomType').value,
+        floor: document.getElementById('editFloor').value,
+        roomNo: document.getElementById('editRoomNo').value,
+        assetType: document.getElementById('editAssetType').value,
+        quantity: document.getElementById('editQuantity').value,
+        brand: document.getElementById('editBrand').value,
+        model: document.getElementById('editModel').value,
+        serial: document.getElementById('editSerial').value,
+        status: document.getElementById('editStatus').value,
+        date: document.getElementById('editAssetDate').value || new Date().toISOString()
+    };
+    
+    const saveBtn = document.getElementById('saveEditBtn');
+    const btnText = saveBtn.querySelector('.btn-text');
+    const editSpinner = document.getElementById('editSpinner');
+    
+    saveBtn.disabled = true;
+    btnText.textContent = 'جاري الحفظ...';
+    if (editSpinner) editSpinner.classList.remove('hidden');
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        });
+        
+        showToast('تم تعديل الأصل بنجاح!', 'success');
+        closeEditModal();
+        
+        globalData = [];
+        await fetchData();
+        
+        if (typeof renderStatistics === 'function') renderStatistics();
+        if (typeof renderMatrixTable === 'function') renderMatrixTable();
+        
+    } catch (error) {
+        console.error('Error updating asset:', error);
+        showToast('حدث خطأ أثناء تعديل الأصل', 'error');
+    } finally {
+        saveBtn.disabled = false;
+        btnText.textContent = 'حفظ التعديلات';
+        if (editSpinner) editSpinner.classList.add('hidden');
+    }
+};
+
+// ============================================================
+// DELETE ASSET FUNCTIONS - إضافة ميزة الحذف
+// ============================================================
+
+window.openDeleteConfirm = function(assetId) {
+    if (!globalData || globalData.length === 0) {
+        showToast('البيانات لم يتم تحميلها بعد', 'error');
+        return;
+    }
+    
+    const asset = globalData.find(item => String(item.id) === String(assetId));
+    
+    if (!asset) {
+        showToast('لم يتم العثور على الأصل', 'error');
+        return;
+    }
+    
+    document.getElementById('deleteAssetId').value = asset.id;
+    const deleteInfo = document.getElementById('deleteAssetInfo');
+    if (deleteInfo) {
+        deleteInfo.innerHTML = `${asset.assetType || 'أصل'} - ${asset.brand || ''} (الغرفة: ${asset.roomNo || 'غير محدد'})`;
+    }
+    
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.remove('hidden');
+};
+
+window.closeDeleteModal = function() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.classList.add('hidden');
+    document.getElementById('deleteAssetId').value = '';
+};
+
+window.confirmDelete = async function() {
+    const assetId = document.getElementById('deleteAssetId').value;
+    if (!assetId) {
+        showToast('خطأ في معرف الأصل', 'error');
+        return;
+    }
+    
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const btnText = deleteBtn.querySelector('.btn-text');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    
+    deleteBtn.disabled = true;
+    btnText.textContent = 'جاري الحذف...';
+    if (deleteSpinner) deleteSpinner.classList.remove('hidden');
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete',
+                id: assetId
+            })
+        });
+        
+        showToast('تم حذف الأصل بنجاح!', 'success');
+        closeDeleteModal();
+        
+        globalData = [];
+        await fetchData();
+        
+        if (typeof renderStatistics === 'function') renderStatistics();
+        if (typeof renderMatrixTable === 'function') renderMatrixTable();
+        
+    } catch (error) {
+        console.error('Error deleting asset:', error);
+        showToast('حدث خطأ أثناء حذف الأصل', 'error');
+    } finally {
+        deleteBtn.disabled = false;
+        btnText.textContent = 'حذف نهائي';
+        if (deleteSpinner) deleteSpinner.classList.add('hidden');
+    }
+};
+
+// ============================================================
+// LOCATION FILTER FUNCTIONS - تصفية حسب الفصل أو المكتب
+// ============================================================
+
+function addLocationFilters() {
+    const filtersCard = document.querySelector('#dashboard .filters');
+    if (!filtersCard) return;
+    
+    if (document.getElementById('filterLocation')) return;
+    
+    const locationFilterHTML = `
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-building"></i> تصفية حسب الموقع</label>
+                    <select id="filterLocation">
+                        <option value="">الكل (جميع المواقع)</option>
+                        <option value="فصل">فصول دراسية فقط</option>
+                        <option value="مكتب">مكاتب فقط</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-magnifying-glass-chart"></i> بحث مخصص في الموقع</label>
+                    <input type="text" id="filterCustomLocation" placeholder="أدخل رقم الفصل أو اسم المكتب...">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    filtersCard.insertAdjacentHTML('beforeend', locationFilterHTML);
+    
+    document.getElementById('filterLocation')?.addEventListener('change', applyFiltersWithLocation);
+    document.getElementById('filterCustomLocation')?.addEventListener('input', applyFiltersWithLocation);
+}
+
+window.applyFiltersWithLocation = function() {
+    if (globalData.length === 0) return;
+
+    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+    const branch = document.getElementById('filterBranch')?.value || '';
+    const school = document.getElementById('filterSchool')?.value || '';
+    const status = document.getElementById('filterStatus')?.value || '';
+    const roomNo = document.getElementById('filterRoomNo')?.value || '';
+    const assetType = document.getElementById('filterAssetType')?.value || '';
+    const locationType = document.getElementById('filterLocation')?.value || '';
+    const customLocation = document.getElementById('filterCustomLocation')?.value.toLowerCase() || '';
+
+    const filteredData = globalData.filter(row => {
+        if(row.id === "ID" || row.id === "id") return false;
+
+        const matchesSearch = 
+            (row.assetType && String(row.assetType).toLowerCase().includes(searchTerm)) ||
+            (row.roomNo && String(row.roomNo).toLowerCase().includes(searchTerm)) ||
+            (row.floor && String(row.floor).toLowerCase().includes(searchTerm)) ||
+            (row.serial && String(row.serial).toLowerCase().includes(searchTerm)) ||
+            (row.brand && String(row.brand).toLowerCase().includes(searchTerm)) ||
+            (row.model && String(row.model).toLowerCase().includes(searchTerm));
+            
+        const matchesBranch = branch === "" || row.branch === branch;
+        const matchesSchool = school === "" || row.school === school;
+        const matchesStatus = status === "" || row.status === status;
+        const matchesRoomNo = roomNo === "" || (row.roomNo && String(row.roomNo) === String(roomNo));
+        const matchesAssetType = assetType === "" || row.assetType === assetType;
+        
+        let matchesLocationType = true;
+        if (locationType !== '') {
+            if (locationType === 'فصل' && row.roomType !== 'فصل') matchesLocationType = false;
+            if (locationType === 'مكتب' && row.roomType !== 'مكتب') matchesLocationType = false;
+        }
+        
+        let matchesCustomLocation = true;
+        if (customLocation !== '') {
+            const roomNoMatch = row.roomNo && String(row.roomNo).toLowerCase().includes(customLocation);
+            const roomTypeMatch = row.roomType && String(row.roomType).toLowerCase().includes(customLocation);
+            if (!roomNoMatch && !roomTypeMatch) matchesCustomLocation = false;
+        }
+
+        return matchesSearch && matchesBranch && matchesSchool && matchesStatus && 
+               matchesRoomNo && matchesAssetType && matchesLocationType && matchesCustomLocation;
+    });
+
+    renderTable(filteredData);
+};
+
+if (typeof window.originalApplyFilters === 'undefined') {
+    window.originalApplyFilters = window.applyFilters;
+    window.applyFilters = applyFiltersWithLocation;
+}
+
+const originalNavigateTo2 = window.navigateTo;
+window.navigateTo = function(targetId) {
+    originalNavigateTo2(targetId);
+    if (targetId === 'dashboard') {
+        setTimeout(addLocationFilters, 100);
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(addLocationFilters, 500);
+});
+
+// ============================================================
+// CUSTOM SEARCHABLE SELECT COMPONENT
 // ============================================================
 
 function makeSearchableSelect(select) {
@@ -1717,57 +1984,47 @@ function makeSearchableSelect(select) {
     if (select.dataset.searchableInitialized) return;
     select.dataset.searchableInitialized = 'true';
 
-    // Create wrapper
     const wrapper = document.createElement('div');
     wrapper.className = 'custom-select-wrapper';
     
-    // Insert wrapper before the select and move the select inside
     select.parentNode.insertBefore(wrapper, select);
     wrapper.appendChild(select);
     
-    // Hide the original select (still accessible and fires change events)
     select.style.display = 'none';
 
-    // Create trigger button
     const trigger = document.createElement('div');
     trigger.className = 'custom-select-trigger';
     trigger.innerHTML = `<span></span><i class="fa-solid fa-chevron-down"></i>`;
     wrapper.appendChild(trigger);
 
-    // Create dropdown container
     const dropdown = document.createElement('div');
     dropdown.className = 'custom-select-dropdown hidden';
     
-    // Create search input
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.className = 'custom-select-search';
-    searchInput.placeholder = 'ابحث هنا...';
-    dropdown.appendChild(searchInput);
+    const searchInputSelect = document.createElement('input');
+    searchInputSelect.type = 'text';
+    searchInputSelect.className = 'custom-select-search';
+    searchInputSelect.placeholder = 'ابحث هنا...';
+    dropdown.appendChild(searchInputSelect);
 
-    // Create options container
     const optionsContainer = document.createElement('div');
     optionsContainer.className = 'custom-select-options';
     dropdown.appendChild(optionsContainer);
     
     wrapper.appendChild(dropdown);
 
-    // Update trigger text based on current selection
     function updateTriggerText() {
         const selectedOption = select.options[select.selectedIndex];
         trigger.querySelector('span').textContent = selectedOption ? selectedOption.textContent : 'اختر...';
     }
 
-    // Rebuild options in custom dropdown
     function rebuildOptions() {
         optionsContainer.innerHTML = '';
         const options = Array.from(select.options);
         
-        // Hide search if options are 4 or less to keep UI clean
         if (options.length <= 4) {
-            searchInput.classList.add('hidden');
+            searchInputSelect.classList.add('hidden');
         } else {
-            searchInput.classList.remove('hidden');
+            searchInputSelect.classList.remove('hidden');
         }
 
         options.forEach((opt, idx) => {
@@ -1782,10 +2039,8 @@ function makeSearchableSelect(select) {
                 e.stopPropagation();
                 select.selectedIndex = idx;
                 
-                // Trigger change events
                 select.dispatchEvent(new Event('change', { bubbles: true }));
                 
-                // Close dropdown
                 closeDropdown();
             });
             optionsContainer.appendChild(customOpt);
@@ -1794,9 +2049,8 @@ function makeSearchableSelect(select) {
         updateTriggerText();
     }
 
-    // Filter options based on search text
     function filterOptions() {
-        const filterText = searchInput.value.toLowerCase().trim();
+        const filterText = searchInputSelect.value.toLowerCase().trim();
         const customOpts = optionsContainer.querySelectorAll('.custom-select-option');
         
         customOpts.forEach(customOpt => {
@@ -1810,7 +2064,6 @@ function makeSearchableSelect(select) {
     }
 
     function openDropdown() {
-        // Close other open custom selects first
         document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
             if (w !== wrapper) {
                 w.classList.remove('open');
@@ -1820,9 +2073,9 @@ function makeSearchableSelect(select) {
 
         wrapper.classList.add('open');
         dropdown.classList.remove('hidden');
-        searchInput.value = '';
+        searchInputSelect.value = '';
         filterOptions();
-        setTimeout(() => searchInput.focus(), 50);
+        setTimeout(() => searchInputSelect.focus(), 50);
     }
 
     function closeDropdown() {
@@ -1840,9 +2093,8 @@ function makeSearchableSelect(select) {
     }
 
     trigger.addEventListener('click', toggleDropdown);
-    searchInput.addEventListener('input', filterOptions);
+    searchInputSelect.addEventListener('input', filterOptions);
 
-    // Sync visibility based on the hidden class on native select
     function syncVisibility() {
         if (select.classList.contains('hidden')) {
             wrapper.classList.add('hidden');
@@ -1851,14 +2103,11 @@ function makeSearchableSelect(select) {
         }
     }
 
-    // Initial build and visibility check
     rebuildOptions();
     syncVisibility();
 
-    // Listen to changes on the original select to update trigger text
     select.addEventListener('change', () => {
         updateTriggerText();
-        // Update selected class in custom options
         const customOpts = optionsContainer.querySelectorAll('.custom-select-option');
         customOpts.forEach((customOpt, idx) => {
             if (idx === select.selectedIndex) {
@@ -1869,7 +2118,6 @@ function makeSearchableSelect(select) {
         });
     });
 
-    // Handle form reset event to sync back
     const parentForm = select.closest('form');
     if (parentForm) {
         parentForm.addEventListener('reset', () => {
@@ -1880,7 +2128,6 @@ function makeSearchableSelect(select) {
         });
     }
 
-    // MutationObserver to watch for dynamic changes (like options changes or class changes)
     const observer = new MutationObserver((mutations) => {
         mutations.forEach(mutation => {
             if (mutation.type === 'childList') {
@@ -1900,7 +2147,6 @@ function makeSearchableSelect(select) {
     });
 }
 
-// Wire up all select fields to use the custom searchable select dropdown
 function initAllSearchableSelects() {
     const allSelects = document.querySelectorAll('select');
     allSelects.forEach(select => {
@@ -1914,7 +2160,6 @@ if (document.readyState === 'loading') {
     initAllSearchableSelects();
 }
 
-// Close dropdowns when clicking outside
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select-wrapper')) {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(wrapper => {
@@ -1923,4 +2168,3 @@ document.addEventListener('click', (e) => {
         });
     }
 });
-
