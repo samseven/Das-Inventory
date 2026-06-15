@@ -1,6 +1,6 @@
 // --- Configuration ---
 // يرجى استبدال الرابط أدناه بالرابط الخاص بـ Web App بعد نشر Google Apps Script
-const API_URL = "https://script.google.com/macros/s/AKfycbwzEfVEbmz-R90oFfZ0mXme47nOvwYGgyB8RL6slL0ok47G_wRCQlC9cLxoqT8TBwHJoA/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbxlnLVidV9PvKBIxhbKxO60gpIHVFg7SHVWR5TFPIhtsHggphk-jsEwq62L65XkeuMW8Q/exec"; 
 
 // --- Data Definitions ---
 
@@ -196,6 +196,170 @@ brandSelect.addEventListener('change', (e) => {
 });
 
 // --- Form Submission ---
+// --- Memory & Autofill Functions ---
+
+window.resetAssetDetailsOnly = function() {
+    // Clear asset type select
+    const assetType = document.getElementById('assetType');
+    if (assetType) {
+        assetType.value = '';
+        assetType.dispatchEvent(new Event('change'));
+    }
+    
+    // Clear custom brand
+    const customBrand = document.getElementById('customBrand');
+    if (customBrand) {
+        customBrand.value = '';
+        customBrand.classList.add('hidden');
+        customBrand.required = false;
+    }
+    
+    // Clear brand select options
+    brandSelect.innerHTML = '<option value="">اختر أو اكتب...</option>';
+    
+    // Clear other text fields
+    const model = document.getElementById('model');
+    if (model) model.value = '';
+    
+    const serial = document.getElementById('serial');
+    if (serial) serial.value = '';
+    
+    const quantity = document.getElementById('quantity');
+    if (quantity) quantity.value = '1';
+    
+    const description = document.getElementById('description');
+    if (description) description.value = '';
+};
+
+window.fillAddAssetForm = function(data) {
+    if (!data) return;
+    
+    const branch = document.getElementById('branch');
+    if (branch && data.branch) {
+        branch.value = data.branch;
+        branch.dispatchEvent(new Event('change'));
+    }
+    
+    const school = document.getElementById('school');
+    if (school && data.school) {
+        school.value = data.school;
+        school.dispatchEvent(new Event('change'));
+    }
+    
+    const roomType = document.getElementById('roomType');
+    if (roomType && data.roomType) {
+        roomType.value = data.roomType;
+        roomType.dispatchEvent(new Event('change'));
+    }
+    
+    const floor = document.getElementById('floor');
+    if (floor && data.floor) {
+        floor.value = data.floor;
+        floor.dispatchEvent(new Event('change'));
+    }
+    
+    const roomNo = document.getElementById('roomNo');
+    if (roomNo && data.roomNo) roomNo.value = data.roomNo;
+    
+    const status = document.getElementById('status');
+    if (status && data.status) {
+        status.value = data.status;
+        status.dispatchEvent(new Event('change'));
+    }
+    
+    const assetType = document.getElementById('assetType');
+    if (assetType && data.assetType) {
+        assetType.value = data.assetType;
+        assetType.dispatchEvent(new Event('change'));
+    }
+    
+    const brand = document.getElementById('brand');
+    const customBrand = document.getElementById('customBrand');
+    if (brand && data.brand) {
+        let optionExists = false;
+        for (let i = 0; i < brand.options.length; i++) {
+            if (brand.options[i].value === data.brand) {
+                optionExists = true;
+                break;
+            }
+        }
+        
+        if (optionExists) {
+            brand.value = data.brand;
+            brand.dispatchEvent(new Event('change'));
+            if (customBrand) {
+                customBrand.value = '';
+                customBrand.classList.add('hidden');
+                customBrand.required = false;
+            }
+        } else {
+            brand.value = 'أخرى';
+            brand.dispatchEvent(new Event('change'));
+            if (customBrand) {
+                customBrand.value = data.brand;
+                customBrand.classList.remove('hidden');
+                customBrand.required = true;
+            }
+        }
+    }
+    
+    const model = document.getElementById('model');
+    if (model && data.model) model.value = data.model;
+    
+    const quantity = document.getElementById('quantity');
+    if (quantity && data.quantity) quantity.value = data.quantity;
+    
+    const serial = document.getElementById('serial');
+    if (serial && data.serial) serial.value = data.serial;
+    
+    const description = document.getElementById('description');
+    if (description && data.description) description.value = data.description;
+};
+
+window.restoreLocationFields = function() {
+    const lastAssetStr = localStorage.getItem('last_asset');
+    if (lastAssetStr) {
+        try {
+            const lastAsset = JSON.parse(lastAssetStr);
+            
+            const branch = document.getElementById('branch');
+            if (branch && lastAsset.branch) {
+                branch.value = lastAsset.branch;
+                branch.dispatchEvent(new Event('change'));
+            }
+            
+            const school = document.getElementById('school');
+            if (school && lastAsset.school) {
+                school.value = lastAsset.school;
+                school.dispatchEvent(new Event('change'));
+            }
+            
+            const roomType = document.getElementById('roomType');
+            if (roomType && lastAsset.roomType) {
+                roomType.value = lastAsset.roomType;
+                roomType.dispatchEvent(new Event('change'));
+            }
+            
+            const floor = document.getElementById('floor');
+            if (floor && lastAsset.floor) {
+                floor.value = lastAsset.floor;
+                floor.dispatchEvent(new Event('change'));
+            }
+            
+            const roomNo = document.getElementById('roomNo');
+            if (roomNo && lastAsset.roomNo) roomNo.value = lastAsset.roomNo;
+            
+            const status = document.getElementById('status');
+            if (status && lastAsset.status) {
+                status.value = lastAsset.status;
+                status.dispatchEvent(new Event('change'));
+            }
+        } catch (e) {
+            console.error('Error parsing last_asset on load:', e);
+        }
+    }
+};
+
 assetForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -227,9 +391,13 @@ assetForm.addEventListener('submit', async (e) => {
         });
         
         showToast('تم حفظ الأصل بنجاح!', 'success');
-        assetForm.reset();
-        brandSelect.innerHTML = '<option value="">اختر أو اكتب...</option>';
-        customBrandInput.classList.add('hidden');
+        
+        // Save the full asset data to localStorage
+        localStorage.setItem('last_asset', JSON.stringify(data));
+        
+        // Reset only the asset details, keeping location and status
+        resetAssetDetailsOnly();
+        
         globalData = []; 
     } catch (error) {
         console.error('Error saving:', error);
@@ -269,11 +437,11 @@ function showToast(msg, type = 'success') {
 // --- Dashboard Fetching ---
 window.fetchData = async function() {
     if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" || API_URL === "") {
-        tableBody.innerHTML = '<tr><td colspan="12" class="text-center empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><h3>لم يتم الربط بقاعدة البيانات</h3><p>يرجى إضافة رابط Google Apps Script في ملف script.js</p></td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="14" class="text-center empty-state"><div class="empty-icon"><i class="fa-solid fa-link-slash"></i></div><h3>لم يتم الربط بقاعدة البيانات</h3><p>يرجى إضافة رابط Google Apps Script في ملف script.js</p></td></tr>';
         return;
     }
 
-    tableBody.innerHTML = '<tr><td colspan="12" class="text-center empty-state"><i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom:1rem;"></i><br>جاري تحميل البيانات...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="14" class="text-center empty-state"><i class="fa-solid fa-spinner fa-spin fa-2x" style="color: var(--primary); margin-bottom:1rem;"></i><br>جاري تحميل البيانات...</td></tr>';
     
     try {
         const response = await fetch(API_URL);
@@ -288,12 +456,12 @@ window.fetchData = async function() {
             if (typeof renderStatistics === 'function') renderStatistics();
             if (typeof renderMatrixTable === 'function') renderMatrixTable();
         } else {
-            tableBody.innerHTML = '<tr><td colspan="12" class="text-center empty-state"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div><h3>لا توجد بيانات</h3><p>لم يتم تسجيل أي أصول في قاعدة البيانات حتى الآن.</p></td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="14" class="text-center empty-state"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div><h3>لا توجد بيانات</h3><p>لم يتم تسجيل أي أصول في قاعدة البيانات حتى الآن.</p></td></tr>';
             globalData = [];
         }
     } catch (error) {
         console.error('Error fetching data:', error);
-        tableBody.innerHTML = '<tr><td colspan="12" class="text-center empty-state" style="color:var(--danger)"><div class="empty-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>خطأ في التحميل</h3><p>فشل في جلب البيانات. تأكد من صحة الرابط أو صلاحيات السكريبت.</p></td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="14" class="text-center empty-state" style="color:var(--danger)"><div class="empty-icon"><i class="fa-solid fa-triangle-exclamation"></i></div><h3>خطأ في التحميل</h3><p>فشل في جلب البيانات. تأكد من صحة الرابط أو صلاحيات السكريبت.</p></td></tr>';
     }
 }
 
@@ -309,7 +477,7 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     
     if (data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="13" class="text-center empty-state"><h3>لم يتم العثور على نتائج مطابقة للبحث</h3></td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="14" class="text-center empty-state"><h3>لم يتم العثور على نتائج مطابقة للبحث</h3></td></tr>';
         return;
     }
 
@@ -328,6 +496,7 @@ function renderTable(data) {
             <td>${row.brand || '-'}</td>
             <td>${row.model || '-'}</td>
             <td style="font-family: monospace; color: var(--text-muted);">${row.serial || '-'}</td>
+            <td>${row.description || '-'}</td>
             <td><span class="status-badge ${getStatusClass(row.status)}">${row.status || '-'}</span></td>
             <td style="font-size: 0.85rem; color: var(--text-muted);">${row.date || '-'}</td>
             <td>
@@ -919,8 +1088,8 @@ function buildReportHeader(reportTitle, filtersSummary) {
     return `
         <div class="report-doc-header">
             <div class="report-doc-header-right">
-                <div class="report-doc-logo">
-                    <i class="fa-solid fa-school"></i>
+                <div class="report-doc-logo" style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #ffffff; border: 1px solid var(--border-color); padding: 5px;">
+                    <img src="Logo.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Logo" />
                 </div>
                 <div class="report-doc-title-block">
                     <h2>${reportTitle}</h2>
@@ -947,8 +1116,8 @@ function buildRoomReportHeader(branchName, schoolName, roomNo, roomType, floor) 
     return `
         <div class="report-doc-header" style="border-bottom: 3px solid var(--primary); padding-bottom: 1.5rem; margin-bottom: 2rem;">
             <div class="report-doc-header-right" style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="report-doc-logo" style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; color: white;">
-                    <i class="fa-solid fa-school"></i>
+                <div class="report-doc-logo" style="width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #ffffff; border: 1px solid var(--border-color); padding: 5px;">
+                    <img src="Logo.png" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Logo" />
                 </div>
                 <div class="report-doc-title-block">
                     <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin: 0;">تقرير جرد محتويات غرفة</h2>
@@ -1722,6 +1891,9 @@ window.openEditModal = async function(assetId) {
     const editSerial = document.getElementById('editSerial');
     if (editSerial) editSerial.value = asset.serial || '';
     
+    const editDescription = document.getElementById('editDescription');
+    if (editDescription) editDescription.value = asset.description || '';
+    
     const editStatus = document.getElementById('editStatus');
     if (editStatus) editStatus.value = asset.status || 'ممتاز';
     
@@ -1757,6 +1929,7 @@ window.saveEdit = async function() {
         brand: document.getElementById('editBrand').value,
         model: document.getElementById('editModel').value,
         serial: document.getElementById('editSerial').value,
+        description: document.getElementById('editDescription').value,
         status: document.getElementById('editStatus').value,
         date: document.getElementById('editAssetDate').value || new Date().toISOString()
     };
@@ -2154,10 +2327,35 @@ function initAllSearchableSelects() {
     });
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAllSearchableSelects);
-} else {
+window.initializeApp = function() {
     initAllSearchableSelects();
+    restoreLocationFields();
+    
+    // Wire copy button
+    const copyBtn = document.getElementById('copyLastAssetBtn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const lastAssetStr = localStorage.getItem('last_asset');
+            if (lastAssetStr) {
+                try {
+                    const lastAsset = JSON.parse(lastAssetStr);
+                    fillAddAssetForm(lastAsset);
+                    showToast('تم نسخ بيانات آخر أصل!', 'success');
+                } catch (e) {
+                    console.error('Error copying last asset:', e);
+                    showToast('لا توجد بيانات محفوظة مسبقاً', 'error');
+                }
+            } else {
+                showToast('لا توجد بيانات محفوظة مسبقاً', 'error');
+            }
+        });
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
 }
 
 document.addEventListener('click', (e) => {

@@ -28,9 +28,9 @@ function setup() {
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    const headers = ['ID', 'Branch', 'School', 'Room Type', 'Floor', 'Room No', 'Asset Type', 'Quantity', 'Brand', 'Model', 'Serial', 'Status', 'Date'];
+    const headers = ['ID', 'Branch', 'School', 'Room Type', 'Floor', 'Room No', 'Asset Type', 'Quantity', 'Brand', 'Model', 'Serial', 'Status', 'Date', 'Description'];
     sheet.appendRow(headers);
-    sheet.getRange("A1:M1").setFontWeight("bold").setBackground("#4f46e5").setFontColor("#ffffff");
+    sheet.getRange("A1:N1").setFontWeight("bold").setBackground("#0c54a3").setFontColor("#ffffff");
     sheet.setFrozenRows(1);
   }
 }
@@ -70,7 +70,8 @@ function doPost(e) {
       data.model || '',
       data.serial || '',
       data.status || '',
-      data.date || new Date().toISOString()
+      data.date || new Date().toISOString(),
+      data.description || ''
     ]);
     
     return ContentService.createTextOutput(JSON.stringify({ 'status': 'success', 'message': 'Data Saved' }))
@@ -100,7 +101,7 @@ function doGet(e) {
     const jsonData = [];
     
     if (data.length > 1) {
-      const headers = ['id', 'branch', 'school', 'roomType', 'floor', 'roomNo', 'assetType', 'quantity', 'brand', 'model', 'serial', 'status', 'date'];
+      const headers = ['id', 'branch', 'school', 'roomType', 'floor', 'roomNo', 'assetType', 'quantity', 'brand', 'model', 'serial', 'status', 'date', 'description'];
       for (let i = 1; i < data.length; i++) {
         let rowObj = {};
         for (let j = 0; j < headers.length; j++) {

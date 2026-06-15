@@ -80,6 +80,12 @@
                 <p>الرجاء تعبئة النموذج أدناه لتسجيل أصل جديد في قاعدة البيانات.</p>
             </div>
             
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto;">
+                <button type="button" id="copyLastAssetBtn" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.6rem 1.2rem; border-radius: 10px; gap: 0.5rem;">
+                    <i class="fa-solid fa-copy"></i> نسخ بيانات آخر أصل تم إدخاله
+                </button>
+            </div>
+            
             <form id="asset-form" class="card-form">
                 <div class="form-grid">
                     <!-- Branch -->
@@ -213,6 +219,12 @@
                     <div class="form-group">
                         <label for="serial">الرقم التسلسلي / الباركود</label>
                         <input type="text" id="serial" name="serial" placeholder="أدخل السيريال إن وجد">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label for="description">وصف الأصل (اختياري)</label>
+                        <input type="text" id="description" name="description" placeholder="أدخل وصفاً إضافياً للأصل إن وجد">
                     </div>
 
                     <!-- Status -->
@@ -351,6 +363,7 @@
                             <th>الماركة</th>
                             <th>الموديل</th>
                             <th>السيريال</th>
+                            <th>الوصف</th>
                             <th>الحالة</th>
                             <th>التاريخ</th>
                             <th style="width:100px; text-align:center;">إجراءات</th>
@@ -358,7 +371,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="13" class="text-center empty-state">
+                            <td colspan="14" class="text-center empty-state">
                                 <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
                                 <h3>لم يتم تحميل البيانات بعد</h3>
                                 <p>اضغط على "تحديث البيانات" لجلب أحدث الأصول من Google Sheets.</p>
@@ -690,6 +703,10 @@
                     <div class="form-group">
                         <label>السيريال</label>
                         <input type="text" id="editSerial">
+                    </div>
+                    <div class="form-group">
+                        <label>الوصف</label>
+                        <input type="text" id="editDescription" placeholder="أدخل وصفاً للأصل إن وجد">
                     </div>
                     <div class="form-group">
                         <label>حالة الأصل</label>

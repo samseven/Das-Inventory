@@ -1,22 +1,24 @@
-/* Color Palette & Variables - Premium Dark Blue & Indigo Theme */
+/* Color Palette & Variables - Official Dar Al-Salam Schools Branding Theme */
 :root {
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
-    --secondary: #0ea5e9;
-    --secondary-hover: #0284c7;
-    --bg-color: #f8fafc;
+    --primary: #0c54a3;
+    --primary-hover: #0a4687;
+    --primary-light: rgba(12, 84, 163, 0.08);
+    --secondary: #cf1b3c;
+    --secondary-hover: #b31632;
+    --secondary-light: rgba(207, 27, 60, 0.08);
+    --bg-color: #f4f6fa;
     --card-bg: #ffffff;
     --text-main: #0f172a;
     --text-muted: #64748b;
     --border-color: #e2e8f0;
     --danger: #ef4444;
-    --warning: #f59e0b;
+    --warning: #eab308;
     --success: #10b981;
     --font-family: 'Tajawal', sans-serif;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --border-radius: 12px;
+    --shadow: 0 10px 15px -3px rgba(12, 84, 163, 0.05), 0 4px 6px -2px rgba(12, 84, 163, 0.03);
+    --shadow-lg: 0 20px 25px -5px rgba(12, 84, 163, 0.1), 0 10px 10px -5px rgba(12, 84, 163, 0.04);
+    --border-radius: 16px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -93,13 +95,13 @@ ul {
 
 .nav-links a:hover {
     color: var(--primary);
-    background-color: rgba(79, 70, 229, 0.05);
+    background-color: rgba(12, 84, 163, 0.05);
 }
 
 .nav-links a.active {
     background-color: var(--primary);
     color: white;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    box-shadow: 0 4px 12px rgba(12, 84, 163, 0.25);
 }
 
 .mobile-menu-btn {
@@ -129,7 +131,7 @@ ul {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+    background: linear-gradient(135deg, #072a56 0%, #0c54a3 50%, #1a73e8 100%);
     border-radius: 24px;
     padding: 4rem 5rem;
     color: white;
@@ -205,25 +207,25 @@ ul {
 .btn-primary {
     background-color: var(--primary);
     color: white;
-    box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 4px 6px rgba(12, 84, 163, 0.2);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 6px 12px rgba(12, 84, 163, 0.3);
 }
 
 .btn-secondary {
     background-color: var(--secondary);
     color: white;
-    box-shadow: 0 4px 6px rgba(14, 165, 233, 0.2);
+    box-shadow: 0 4px 6px rgba(207, 27, 60, 0.2);
 }
 
 .btn-secondary:hover {
     background-color: var(--secondary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 6px 12px rgba(207, 27, 60, 0.3);
 }
 
 .btn-outline {
@@ -271,7 +273,7 @@ ul {
     font-size: 2.5rem;
 }
 
-.tech-icon { background-color: rgba(79, 70, 229, 0.1); color: var(--primary); }
+.tech-icon { background-color: rgba(12, 84, 163, 0.1); color: var(--primary); }
 .furniture-icon { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); }
 .cloud-icon { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
 
@@ -348,7 +350,7 @@ input:focus, select:focus {
     outline: none;
     border-color: var(--primary);
     background-color: #fff;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 4px rgba(12, 84, 163, 0.1);
 }
 
 .form-actions {
@@ -815,7 +817,7 @@ tr:hover td {
 }
 
 .report-table tbody tr:hover {
-    background-color: rgba(79,70,229,0.05);
+    background-color: rgba(12, 84, 163, 0.05);
 }
 
 .report-table tfoot td {
@@ -906,7 +908,7 @@ tr:hover td {
 .custom-select-wrapper.open .custom-select-trigger {
     border-color: var(--primary);
     background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 4px rgba(12, 84, 163, 0.1);
 }
 
 .custom-select-trigger i {
@@ -990,7 +992,7 @@ tr:hover td {
 }
 
 .custom-select-option:hover {
-    background-color: rgba(79, 70, 229, 0.05);
+    background-color: rgba(12, 84, 163, 0.05);
     color: var(--primary);
 }
 
@@ -1126,7 +1128,7 @@ tr:hover td {
 }
 
 .action-btn-edit {
-    background-color: rgba(79, 70, 229, 0.1);
+    background-color: rgba(12, 84, 163, 0.1);
     color: var(--primary);
 }
 
@@ -1134,7 +1136,7 @@ tr:hover td {
     background-color: var(--primary);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 12px rgba(12, 84, 163, 0.3);
 }
 
 .action-btn-delete {
@@ -1233,7 +1235,7 @@ tr:hover td {
 }
 
 .kpi-card.total .kpi-icon-wrapper {
-    background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(99, 102, 241, 0.15));
+    background: linear-gradient(135deg, rgba(12, 84, 163, 0.15), rgba(207, 27, 60, 0.15));
     color: var(--primary);
 }
 
@@ -1387,7 +1389,7 @@ tr:hover td {
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--primary);
-    background-color: rgba(79, 70, 229, 0.1);
+    background-color: rgba(12, 84, 163, 0.1);
     padding: 0.2rem 0.6rem;
     border-radius: 99px;
 }
@@ -1520,27 +1522,27 @@ tr:hover td {
 
     /* Preserve colors for headers in print */
     .report-doc-header {
-        border-bottom: 3px solid #4f46e5 !important;
+        border-bottom: 3px solid #0c54a3 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     .report-table th {
-        background-color: #4f46e5 !important;
+        background-color: #0c54a3 !important;
         color: white !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     .report-matrix-table th {
-        background-color: #4f46e5 !important;
+        background-color: #0c54a3 !important;
         color: white !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 
     .report-matrix-table tfoot td {
-        background-color: #1e1b4b !important;
+        background-color: #072a56 !important;
         color: white !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -1559,8 +1561,8 @@ tr:hover td {
     }
 
     .report-filter-tag {
-        background-color: #ede9fe !important;
-        color: #4f46e5 !important;
+        background-color: #fce7f3 !important;
+        color: #cf1b3c !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
